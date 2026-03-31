@@ -1,87 +1,36 @@
-module.exports = function(api) {
-  var validEnv = ['development', 'test', 'production']
-  var currentEnv = api.env()
-  var isDevelopmentEnv = api.env('development')
-  var isProductionEnv = api.env('production')
-  var isTestEnv = api.env('test')
+// The source code including full typescript support is available at: 
+// https://github.com/shakacode/react_on_rails_demo_ssr_hmr/blob/master/babel.config.js
 
-  if (!validEnv.includes(currentEnv)) {
-    throw new Error(
-      'Please specify a valid `NODE_ENV` or ' +
-        '`BABEL_ENV` environment variables. Valid values are "development", ' +
-        '"test", and "production". Instead, received: ' +
-        JSON.stringify(currentEnv) +
-        '.'
-    )
-  }
+module.exports = function (api) {
+  const defaultConfigFunc = require('shakapacker/package/babel/preset.js')
+  const resultConfig = defaultConfigFunc(api)
+  const isProductionEnv = api.env('production')
 
-  return {
+  const changesOnDefault = {
     presets: [
-      isTestEnv && [
-        '@babel/preset-env',
-        {
-          targets: {
-            node: 'current'
-          },
-          modules: 'commonjs'
-        },
-        '@babel/preset-react'
-      ],
-      (isProductionEnv || isDevelopmentEnv) && [
-        '@babel/preset-env',
-        {
-          forceAllTransforms: true,
-          useBuiltIns: 'entry',
-          corejs: 3,
-          modules: false,
-          exclude: ['transform-typeof-symbol']
-        }
-      ],
       [
         '@babel/preset-react',
         {
-          development: isDevelopmentEnv || isTestEnv,
-          useBuiltIns: true
+          development: !isProductionEnv,
+          useBuiltIns: true,
+          runtime: 'automatic'
         }
       ]
     ].filter(Boolean),
     plugins: [
-      'babel-plugin-macros',
-      '@babel/plugin-syntax-dynamic-import',
-      isTestEnv && 'babel-plugin-dynamic-import-node',
-      '@babel/plugin-transform-destructuring',
-      [
-        '@babel/plugin-proposal-class-properties',
-        {
-          loose: true
-        }
-      ],
-      [
-        '@babel/plugin-proposal-object-rest-spread',
-        {
-          useBuiltIns: true
-        }
-      ],
-      [
-        '@babel/plugin-transform-runtime',
-        {
-          helpers: false,
-          regenerator: true,
-          corejs: false
-        }
-      ],
-      [
-        '@babel/plugin-transform-regenerator',
-        {
-          async: false
-        }
-      ],
-      isProductionEnv && [
-        'babel-plugin-transform-react-remove-prop-types',
+      // Enable React Refresh (Fast Refresh) only when webpack-dev-server is running (HMR mode)
+      // This prevents React Refresh from trying to connect when using static compilation
+      !isProductionEnv && process.env.WEBPACK_SERVE && 'react-refresh/babel',
+      isProductionEnv && ['babel-plugin-transform-react-remove-prop-types',
         {
           removeImport: true
         }
       ]
-    ].filter(Boolean)
+    ].filter(Boolean),
   }
+
+  resultConfig.presets = [...resultConfig.presets, ...changesOnDefault.presets]
+  resultConfig.plugins = [...resultConfig.plugins, ...changesOnDefault.plugins ]
+
+  return resultConfig
 }

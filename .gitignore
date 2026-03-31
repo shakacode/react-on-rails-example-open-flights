@@ -27,3 +27,8 @@ yarn-debug.log*
 
 # Ignore application configuration
 /config/application.yml
+
+# React on Rails (generated and local files)
+**/generated/**
+ssr-generated
+.env
