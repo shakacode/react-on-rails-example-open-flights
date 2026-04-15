@@ -30,5 +30,7 @@ yarn-debug.log*
 
 # React on Rails (generated and local files)
 **/generated/**
+!app/javascript/generated/
+!app/javascript/generated/server-bundle-generated.js
 ssr-generated
 .env

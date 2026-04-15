@@ -3,6 +3,18 @@
 
 This app is intended to be a simple example of a CRUD app built with **Ruby on Rails** and **React.js** using **Webpacker**.
 
+## Control Plane Flow
+
+This repo now includes the shared `cpflow` GitHub flow used across the React on
+Rails demo apps:
+
+- opt-in review apps via `/deploy-review-app`
+- automatic staging deploys from `main`
+- manual promotion from staging to production
+
+See `.controlplane/readme.md` for the Control Plane setup, required GitHub
+variables and secrets, and the runtime secrets needed before the first deploy.
+
 https://github.com/zayneio/open-flights/assets/37857673/489827d5-f142-4064-ba00-48e194acf2c7
 
 
