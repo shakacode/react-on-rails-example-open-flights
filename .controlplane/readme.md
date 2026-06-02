@@ -38,6 +38,11 @@ generated secret dictionaries:
 
 `cpflow setup-app` creates those dictionaries automatically.
 
+Review apps run pull request code. Values mounted through `cpln://secret/...`
+can be read by that code after the workload starts, so keep the review secret
+dictionary limited to generated, review-only values. Do not reuse production or
+long-lived staging secret dictionaries for review apps.
+
 ## Optional Runtime Variables
 
 If you want password reset emails to work in deployed environments, also set:
@@ -77,3 +82,8 @@ Optional:
 
 - `STAGING_APP_BRANCH=main`
 - `PRIMARY_WORKLOAD=rails`
+
+Use a staging/review `CPLN_TOKEN_STAGING` that cannot access production Control
+Plane resources. In public repositories, review-app deploys skip fork PR heads
+because Docker builds use repository secrets. If a forked change needs a review
+app, first move the reviewed change to a trusted branch in this repository.
