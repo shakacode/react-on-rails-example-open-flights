@@ -6,7 +6,6 @@
     "@rails/webpacker": "5.4.4",
     "@swc/core": "1.15.21",
     "axios": "^1.7.4",
-    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "compression-webpack-plugin": "^9.0.0 || ^10.0.0|| ^11.0.0",
     "css-loader": "7.1.4",
     "css-minimizer-webpack-plugin": "8.0.0",
@@ -30,6 +29,7 @@
   },
   "devDependencies": {
     "@pmmmwh/react-refresh-webpack-plugin": "0.6.2",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "babel-loader": "^10.1.1",
     "react-refresh": "0.18.0",
     "webpack-dev-server": "^4.15.2 || ^5.2.2"
