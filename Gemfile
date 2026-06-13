@@ -43,6 +43,6 @@ group :development do
 end
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-gem "react_on_rails", "= 17.0.0.rc.1"
+gem "react_on_rails", "= 17.0.0.rc.3"
 
 gem "shakapacker", "= 9.7"
