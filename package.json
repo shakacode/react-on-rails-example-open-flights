@@ -14,7 +14,7 @@
     "prop-types": "15.8.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-on-rails": "17.0.0-rc.3",
+    "react-on-rails": "17.0.0-rc.6",
     "react-router-dom": "^5.1.2",
     "sass-loader": "^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0",
     "shakapacker": "9.7.0",
