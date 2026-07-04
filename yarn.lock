@@ -6314,6 +6314,13 @@ p-try@^2.0.0:
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
 
+pack-config-diff@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.npmjs.org/pack-config-diff/-/pack-config-diff-0.1.0.tgz#c15025e196ff85009806890cca0841e96aaa6a1b"
+  integrity sha512-gx60G4pnT4GFQ7WECdf7SCq9vdsvBhodLXXzwisy37/t0zkAZ3hMgLCdOGivudF1l0gcLZhIWVYreS89be15QA==
+  dependencies:
+    js-yaml "^4.1.0"
+
 pako@~1.0.5:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
@@ -8203,12 +8210,13 @@ sha.js@^2.4.0, sha.js@^2.4.8:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
-shakapacker@9.7.0:
-  version "9.7.0"
-  resolved "https://registry.npmjs.org/shakapacker/-/shakapacker-9.7.0.tgz#e8e1b2cb58e54678942698d9071b14aff58b517e"
-  integrity sha512-/6Y/hioWAchUYDcH8pbIQdSLS63QI+Tb26mDGDR6wLO+QFFcxiv906/hqJTTUcW9Xrp5sFV5LwfdctQSSII5ig==
+shakapacker@10.2.0:
+  version "10.2.0"
+  resolved "https://registry.npmjs.org/shakapacker/-/shakapacker-10.2.0.tgz#8d3b18536ae9a21f087feb294672a67a852e829d"
+  integrity sha512-4jHAL3pCjI1BVf45hFPRVrsMRV54VIVVYrw1MmyX/Ks6rl2ydVt3rxpdzzxH4HFZ4umW6AsuAVSVucZE13taCw==
   dependencies:
     js-yaml "^4.1.0"
+    pack-config-diff "^0.1.0"
     path-complete-extname "^1.0.0"
     webpack-merge "^5.8.0"
     yargs "^17.7.2"
