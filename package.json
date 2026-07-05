@@ -1,9 +1,13 @@
 {
   "name": "open-flights",
   "private": true,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0",
+    "yarn": ">=1 <5"
+  },
   "dependencies": {
     "@babel/preset-react": "^7.8.3",
-    "@rails/webpacker": "5.4.4",
+    "@babel/runtime": "7.23.9",
     "@swc/core": "1.15.21",
     "axios": "^1.7.4",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
@@ -29,6 +33,9 @@
     "webpack-subresource-integrity": "^5.1.0"
   },
   "devDependencies": {
+    "@babel/core": "7.23.9",
+    "@babel/plugin-transform-runtime": "7.23.9",
+    "@babel/preset-env": "7.23.9",
     "@pmmmwh/react-refresh-webpack-plugin": "0.6.2",
     "babel-loader": "^10.1.1",
     "react-refresh": "0.18.0",
