@@ -8,7 +8,7 @@ end
 gem 'rails', '~> 6.0', '>= 6.0.3.4'
 gem 'pg', '>= 0.18', '< 2.0'
 gem 'puma', '~> 5.6'
-gem 'webpacker', '~> 5.4', '>= 5.4.4'
+gem 'minitest', '< 6'
 
 gem 'brakeman'
 gem 'bcrypt'
@@ -45,4 +45,4 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem "react_on_rails", "= 17.0.0.rc.6"
 
-gem "shakapacker", "= 9.7"
+gem "shakapacker", "= 10.2.0"
