@@ -2,7 +2,7 @@
   "name": "open-flights",
   "private": true,
   "engines": {
-    "node": "^22.18.0 || >=24.11.0",
+    "node": "^22.18.0 || ^24.11.0",
     "yarn": ">=1 <5"
   },
   "dependencies": {
@@ -19,7 +19,7 @@
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "react-on-rails": "17.0.0-rc.6",
-    "react-router-dom": "^7.18.1",
+    "react-router-dom": "^5.3.4",
     "sass-loader": "^17.0.0",
     "shakapacker": "10.2.0",
     "style-loader": "4.0.0",
