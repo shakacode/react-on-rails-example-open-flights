@@ -3792,10 +3792,10 @@ react-is@^16.13.1, react-is@^16.6.0, react-is@^16.7.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-on-rails@17.0.0-rc.6:
-  version "17.0.0-rc.6"
-  resolved "https://registry.npmjs.org/react-on-rails/-/react-on-rails-17.0.0-rc.6.tgz#4372994d13e7dcff4acaf06efad7b413da4bc42d"
-  integrity sha512-/u2hzYvuUN+1HnH0gEdbfQvkWkgLMSN2kl/2x9CCOInIHffBvilgXzBgJrP5NlvjWpguUWSxO6PrYpgV0BzLMA==
+react-on-rails@17.0.0-rc.9:
+  version "17.0.0-rc.9"
+  resolved "https://registry.npmjs.org/react-on-rails/-/react-on-rails-17.0.0-rc.9.tgz#b6a3af1bee13bbebffb94c94e1fda3080f1b2b0c"
+  integrity sha512-gg3FqUo/pJYLL2uwb+jZbrE8JfBGDVO1cuqhfxePVnYA1lJyh3kTK+4Kd5eO+JHYpMFLYqU4axbu+GYbCqLXug==
 
 react-refresh@0.18.0:
   version "0.18.0"
