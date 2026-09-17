@@ -1,7 +1,7 @@
 # Keys beginning with "cpln_" correspond to your settings in Control Plane.
 #
-# This demo uses PostgreSQL in production, so the Control Plane setup keeps a
-# stateful Postgres workload alongside the Rails workload.
+# Generated baseline for a Rails app that uses PostgreSQL in production.
+# Rename the app keys below if you want something other than the repo name.
 
 allow_org_override_by_env: true
 allow_app_override_by_env: true
@@ -41,6 +41,16 @@ apps:
   react-on-rails-open-flights-example-review:
     <<: *common
     match_if_app_name_starts_with: true
+    # To save review-app database cost, create one shared staging database
+    # secret and policy, then uncomment this block and use
+    # {{SHARED_SECRET_DATABASE}} in templates that need DATABASE_URL.
+    # shared_secret_grants:
+    #   - name: database
+    #     secret_name: react-on-rails-open-flights-example-review-database-secrets
+    #     policy_name: react-on-rails-open-flights-example-review-database-secrets-policy
+    # Uncomment to automatically initialize review-app databases:
+    # hooks:
+    #   post_creation: bundle exec rails db:prepare
 
   react-on-rails-open-flights-example-production:
     <<: *production

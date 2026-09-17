@@ -1,89 +1,68 @@
 # Control Plane Deployment Notes
 
-This repo now includes `cpflow` scaffolding for:
+This repository uses `cpflow` for opt-in pull-request review apps, automatic
+staging deploys from `main`, and manual promotion from staging to production.
+The generated GitHub Actions use `cpflow` v5.3.0 and pin the immutable release
+commit `b1e5ff4a04adfccfd8b59996e8abdbb5defb3fd6`; see
+[`.github/cpflow-help.md`](../.github/cpflow-help.md) for the complete commands,
+settings, and upgrade procedure. After regenerating wrappers for a future
+release, repin them with `bin/pin-cpflow-github-ref <release-commit-sha>`.
 
-- opt-in PR review apps
-- automatic staging deploys from `main`
-- manual promotion from staging to production
+## Runtime Shape
 
-## Why This Shape
+The app uses PostgreSQL in production. The Control Plane templates provision a
+stateful `postgres` workload and volume set alongside the public `rails`
+workload, and the release script runs `bin/rails db:prepare` before a new image
+is made live. Capacity AI right-sizes the Rails workload; PostgreSQL remains
+manually sized.
 
-This app uses PostgreSQL in production, so the Control Plane setup keeps a
-stateful `postgres` workload in the same GVC as the `rails` workload.
+The generated PostgreSQL template contains review/demo-only placeholder
+credentials. Replace both the database secret values and the matching
+`DATABASE_URL` credentials before bootstrapping persistent staging or
+production apps.
 
-- `.controlplane/templates/postgres.yml` provisions the Postgres volumeset,
-  credentials secret, and stateful workload
-- `.controlplane/templates/app.yml` sets the Rails runtime env, including
-  `DATABASE_URL` and `SECRET_KEY_BASE`
-- `.controlplane/release_script.sh` runs `bin/rails db:prepare` before deploys
-  switch traffic to a new image
+## One-Time Bootstrap
 
-The generated `.controlplane/Dockerfile` installs Node.js alongside Ruby,
-auto-installs JavaScript dependencies for npm/Yarn/pnpm projects, and leaves a
-callable package-manager shim in place so `assets:precompile` can invoke `yarn`
-again in later build steps.
-
-This demo also needs the generated React on Rails SSR registry file checked in
-at `app/javascript/generated/server-bundle-generated.js`. Without that file,
-clean-clone Docker builds fail during asset compilation.
-
-## Required Runtime Secrets
-
-Before the app will boot on Control Plane, populate `SECRET_KEY_BASE` in the
-generated secret dictionaries:
-
-- `react-on-rails-open-flights-example-staging-secrets`
-- `react-on-rails-open-flights-example-review-secrets`
-- `react-on-rails-open-flights-example-production-secrets`
-
-`cpflow setup-app` creates those dictionaries automatically.
-
-Review apps run pull request code. Values mounted through `cpln://secret/...`
-can be read by that code after the workload starts, so keep the review secret
-dictionary limited to generated, review-only values. Do not reuse production or
-long-lived staging secret dictionaries for review apps.
-
-## Optional Runtime Variables
-
-If you want password reset emails to work in deployed environments, also set:
-
-- `ROOT_URL`
-- `SENDGRID_API_KEY`
-- `SENDGRID_USERNAME`
-- `SENDGRID_PASSWORD`
-- `DEFAULT_FROM_EMAIL`
-
-## Local cpflow Flow
-
-Typical setup:
+Create the shared review-app secret before enabling review deployments. Review
+apps execute pull-request code, so use a disposable value that grants no access
+to staging, production, or third-party services:
 
 ```sh
-export APP_NAME=react-on-rails-open-flights-example-staging
-
-cpflow setup-app -a "$APP_NAME"
-cpflow build-image -a "$APP_NAME"
-cpflow deploy-image -a "$APP_NAME" --run-release-phase
-cpflow open -a "$APP_NAME"
+cpln secret create-dictionary \
+  --name react-on-rails-open-flights-example-review-secrets \
+  --org "$CPLN_ORG_STAGING" \
+  --entry "SECRET_KEY_BASE=$(bin/rails secret)"
 ```
 
-## GitHub Actions Variables And Secrets
+Bootstrap the persistent staging and production apps before their first deploy:
 
-Set these in GitHub before enabling the generated `cpflow-*` workflows:
+```sh
+cpflow setup-app \
+  -a react-on-rails-open-flights-example-staging \
+  --org "$CPLN_ORG_STAGING" \
+  --skip-post-creation-hook
 
-- `CPLN_TOKEN_STAGING`
-- `CPLN_TOKEN_PRODUCTION`
-- `CPLN_ORG_STAGING`
-- `CPLN_ORG_PRODUCTION`
-- `STAGING_APP_NAME=react-on-rails-open-flights-example-staging`
-- `PRODUCTION_APP_NAME=react-on-rails-open-flights-example-production`
-- `REVIEW_APP_PREFIX=react-on-rails-open-flights-example-review`
+cpflow setup-app \
+  -a react-on-rails-open-flights-example-production \
+  --org "$CPLN_ORG_PRODUCTION" \
+  --skip-post-creation-hook
+```
 
-Optional:
+Add distinct `SECRET_KEY_BASE` values to the generated staging and production
+app secret dictionaries. For later template changes, run `cpflow
+apply-template` and ensure the app identity can `reveal` the app secret policy.
 
-- `STAGING_APP_BRANCH=main`
-- `PRIMARY_WORKLOAD=rails`
+## GitHub Configuration
 
-Use a staging/review `CPLN_TOKEN_STAGING` that cannot access production Control
-Plane resources. In public repositories, review-app deploys skip fork PR heads
-because Docker builds use repository secrets. If a forked change needs a review
-app, first move the reviewed change to a trusted branch in this repository.
+Store `CPLN_TOKEN_STAGING` as a repository secret. Set the repository variables
+`CPLN_ORG_STAGING` to the staging Control Plane organization and
+`STAGING_APP_NAME` to `react-on-rails-open-flights-example-staging`; both review
+apps and automatic staging deploys use that staging organization. The review
+app prefix is inferred from `.controlplane/controlplane.yml` unless
+`REVIEW_APP_PREFIX` overrides it.
+
+Create a protected `production` GitHub Environment with required reviewers and
+self-review disabled. Store `CPLN_TOKEN_PRODUCTION` only as an Environment
+secret, and set `CPLN_ORG_PRODUCTION` and `PRODUCTION_APP_NAME` there as
+Environment variables. Do not create a repository or organization secret named
+`CPLN_TOKEN_PRODUCTION`.
