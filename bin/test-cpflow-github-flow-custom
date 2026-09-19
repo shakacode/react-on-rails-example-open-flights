@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+generated_pack="app/javascript/generated/server-bundle-generated.js"
+snapshot="$(mktemp)"
+trap 'rm -f "${snapshot}"' EXIT
+
+cp "${generated_pack}" "${snapshot}"
+
+bundle exec rails react_on_rails:generate_packs >/dev/null
+
+if ! cmp -s "${snapshot}" "${generated_pack}"; then
+  diff -u "${snapshot}" "${generated_pack}" || true
+  echo "${generated_pack} is stale; run bundle exec rails react_on_rails:generate_packs and commit the result." >&2
+  exit 1
+fi
+
+echo "React on Rails generated server pack is current."
+
+echo "Checking Action Cable Redis adapter."
+DISABLE_SPRING=1 \
+  RAILS_ENV=production \
+  SECRET_KEY_BASE=test \
+  DATABASE_URL=postgresql://test:test@127.0.0.1/test \
+  REDIS_URL=redis://127.0.0.1:6379/1 \
+  ROOT_URL=https://configured.example \
+  CPLN_GLOBAL_ENDPOINT=https://rails-review.ready.controlplane.us/ \
+  bundle exec rails runner '
+    abort "production Action Cable adapter is not Redis" unless ActionCable.server.config.pubsub_adapter == ActionCable::SubscriptionAdapter::Redis
+    controller = Api::V1::AuthController.new
+    abort "reset links must use the platform endpoint" unless controller.send(:password_reset_root_url) == "https://rails-review.ready.controlplane.us"
+    ENV.delete("CPLN_GLOBAL_ENDPOINT")
+    abort "reset links must fall back to ROOT_URL" unless controller.send(:password_reset_root_url) == "https://configured.example"
+    expected_parameters = [[:req, :email], [:req, :token], [:opt, :root_url]]
+    abort "reset worker must accept legacy two-argument jobs" unless ResetPasswordWorker.instance_method(:perform).parameters == expected_parameters
+  '
+
+ruby <<'RUBY'
+require "base64"
+require "yaml"
+
+config = YAML.load_file(".controlplane/controlplane.yml", aliases: true)
+common = config.fetch("aliases").fetch("common")
+
+expected_templates = %w[app postgres redis rails sidekiq]
+expected_app_workloads = %w[rails sidekiq]
+expected_additional_workloads = %w[postgres redis]
+
+unless common.fetch("setup_app_templates") == expected_templates
+  abort "Control Plane setup templates must be #{expected_templates.join(', ')}"
+end
+unless common.fetch("app_workloads") == expected_app_workloads
+  abort "Control Plane app workloads must be #{expected_app_workloads.join(', ')}"
+end
+unless common.fetch("additional_workloads") == expected_additional_workloads
+  abort "Control Plane additional workloads must be #{expected_additional_workloads.join(', ')}"
+end
+
+app = YAML.load_file(".controlplane/templates/app.yml")
+app_env = app.fetch("spec").fetch("env").to_h { |entry| [entry.fetch("name"), entry.fetch("value")] }
+expected_redis_url = "redis://redis.{{APP_NAME}}.cpln.local:6379"
+abort "app template must configure REDIS_URL" unless app_env["REDIS_URL"] == expected_redis_url
+%w[ROOT_URL SENDGRID_USERNAME SENDGRID_PASSWORD DEFAULT_FROM_EMAIL].each do |name|
+  expected_value = "cpln://secret/{{APP_SECRETS}}.#{name}"
+  abort "app template must load #{name} from the app secret" unless app_env[name] == expected_value
+end
+
+production_config = File.read("config/environments/production.rb")
+unless production_config.include?("config.action_mailer.delivery_method = :smtp") &&
+       production_config.include?("address: 'smtp.sendgrid.net'") &&
+       production_config.include?("ENV['SENDGRID_USERNAME']") &&
+       production_config.include?("ENV['SENDGRID_PASSWORD']") &&
+       production_config.include?("ENV.fetch('ROOT_URL'")
+  abort "production must configure SendGrid SMTP and the reset URL host"
+end
+
+resettable = File.read("app/controllers/concerns/resettable.rb")
+unless resettable.include?("ENV['CPLN_GLOBAL_ENDPOINT'].presence || ENV.fetch('ROOT_URL')") &&
+       resettable.include?("ResetPasswordWorker.perform_async(email, token, password_reset_root_url)")
+  abort "review apps must queue reset mail with their platform-provided endpoint"
+end
+
+reset_worker = File.read("app/workers/reset_password_worker.rb")
+unless reset_worker.include?("root_url = ENV.fetch('ROOT_URL')")
+  abort "reset workers must accept queued legacy jobs without an app-specific root URL"
+end
+
+reset_mailer = File.read("app/mailers/reset_password_mailer.rb")
+reset_view = File.read("app/views/reset_password_mailer/call.html.erb")
+unless reset_mailer.include?("@email, @token, @root_url = args") && reset_view.include?("<%= @root_url %>")
+  abort "reset mail must render the queued app-specific root URL"
+end
+
+sidekiq = YAML.load_file(".controlplane/templates/sidekiq.yml")
+sidekiq_container = sidekiq.fetch("spec").fetch("containers").fetch(0)
+abort "sidekiq must deploy the app image" unless sidekiq_container["image"] == "{{APP_IMAGE_LINK}}"
+abort "sidekiq workload command is invalid" unless sidekiq_container["command"] == "bundle" && sidekiq_container["args"] == %w[exec sidekiq]
+
+redis_documents = YAML.load_stream(File.read(".controlplane/templates/redis.yml"))
+redis_volume = redis_documents.find { |document| document.is_a?(Hash) && document["kind"] == "volumeset" }
+redis = redis_documents.find { |document| document.is_a?(Hash) && document["kind"] == "workload" }
+redis_container = redis.fetch("spec").fetch("containers").fetch(0)
+expected_redis_args = ["redis-server", "--dir", "/data", "--appendonly", "yes", "--appendfsync", "everysec"]
+abort "redis template must provision durable storage" unless redis_volume && redis.fetch("spec").fetch("type") == "stateful"
+abort "redis must preserve the image entrypoint and use append-only persistence" unless !redis_container.key?("command") && redis_container["args"] == expected_redis_args
+unless redis_container.fetch("volumes").any? { |volume| volume["path"] == "/data" && volume["uri"].include?("redis-vs") }
+  abort "redis must mount its volume set at /data"
+end
+
+cable = File.read("config/cable.yml")
+abort "production Action Cable must use REDIS_URL" unless cable.include?('ENV.fetch("REDIS_URL"')
+
+postgres_text = File.read(".controlplane/templates/postgres.yml")
+postgres_documents = YAML.load_stream(postgres_text)
+entrypoint_secret = postgres_documents.find do |document|
+  document.is_a?(Hash) && document["kind"] == "secret" && document["name"] == "{{APP_NAME}}-pg-script"
+end
+decoded_entrypoint = Base64.decode64(entrypoint_secret.fetch("data").fetch("payload"))
+readable_lines = postgres_text.lines
+  .drop_while { |line| !line.start_with?("#Here is the ASCII-encoded") }
+  .drop(1)
+  .take_while { |line| line.strip != "---" }
+readable_entrypoint = readable_lines.shift.to_s + readable_lines.map { |line| line.sub(/\A#/, "") }.join
+unless decoded_entrypoint.rstrip == readable_entrypoint.rstrip
+  abort "encoded PostgreSQL entrypoint differs from its readable source"
+end
+unless decoded_entrypoint.include?('aws_cli_version="2.27.41"') &&
+       decoded_entrypoint.include?('awscli-exe-linux-x86_64-${aws_cli_version}.zip') &&
+       decoded_entrypoint.include?('15daae6cc803984064e3d4be9cfd07c4ae8ea703633c0a0b67acc6e321f706a3') &&
+       decoded_entrypoint.include?("sha256sum --check --strict") &&
+       decoded_entrypoint.include?("pg_restore --clean --if-exists")
+  abort "PostgreSQL restore must pin and verify the AWS CLI installer"
+end
+
+postgres = postgres_documents.find { |document| document.is_a?(Hash) && document["kind"] == "workload" }
+readiness = postgres.fetch("spec").fetch("containers").fetch(0).fetch("readinessProbe")
+readiness_command = readiness.fetch("exec").fetch("command")
+unless readiness_command.last.include?("pg_isready") && readiness_command.last.include?("CPLN_READY")
+  abort "postgres readiness must require a live database and completed restore marker"
+end
+
+puts "Control Plane runtime topology is complete."
+RUBY

@@ -1,0 +1,194 @@
+# Comes from example at
+# https://github.com/controlplane-com/examples/blob/main/examples/postgres/manifest.yaml
+
+kind: volumeset
+name: "{{APP_NAME}}-pg-vs"
+description: "{{APP_NAME}}-pg-vs"
+spec:
+  autoscaling:
+    maxCapacity: 1000
+    minFreePercentage: 1
+    scalingFactor: 1.1
+  fileSystemType: ext4
+  initialCapacity: 10
+  performanceClass: general-purpose-ssd
+  snapshots:
+    createFinalSnapshot: true
+    retentionDuration: 7d
+
+---
+kind: secret
+name: "{{APP_NAME}}-pg"
+description: ''
+type: dictionary
+data:
+  password: the_password #Replace this with a real password
+  username: the_user     #Replace this with a real username
+
+---
+kind: secret
+name: "{{APP_NAME}}-pg-script"
+type: opaque
+data:
+  encoding: base64
+  payload: >-
+    IyEvdXNyL2Jpbi9lbnYgYmFzaAoKc2V0IC1ldW8gcGlwZWZhaWwKCnNvdXJjZSAvdXNyL2xvY2FsL2Jpbi9kb2NrZXItZW50cnlwb2ludC5zaAoKaW5zdGFsbF9kZXBzKCkgewogIGF3c19jbGlfdmVyc2lvbj0iMi4yNy40MSIKICBhd3NfY2xpX3NoYTI1Nj0iMTVkYWFlNmNjODAzOTg0MDY0ZTNkNGJlOWNmZDA3YzRhZThlYTcwMzYzM2MwYTBiNjdhY2M2ZTMyMWY3MDZhMyIKICBhd3NfY2xpX2FyY2hpdmU9ImF3c2NsaS1leGUtbGludXgteDg2XzY0LSR7YXdzX2NsaV92ZXJzaW9ufS56aXAiCiAgYXB0LWdldCB1cGRhdGUgLXkgPiAvZGV2L251bGwKICBhcHQtZ2V0IGluc3RhbGwgY3VybCAteSA+IC9kZXYvbnVsbAogIGFwdC1nZXQgaW5zdGFsbCB1bnppcCAteSA+IC9kZXYvbnVsbAogIGN1cmwgLS1mYWlsIC0tbG9jYXRpb24gLS1zaWxlbnQgLS1zaG93LWVycm9yICJodHRwczovL2F3c2NsaS5hbWF6b25hd3MuY29tLyR7YXdzX2NsaV9hcmNoaXZlfSIgLW8gYXdzY2xpdjIuemlwCiAgZWNobyAiJHthd3NfY2xpX3NoYTI1Nn0gIGF3c2NsaXYyLnppcCIgfCBzaGEyNTZzdW0gLS1jaGVjayAtLXN0cmljdCAtCiAgdW56aXAgYXdzY2xpdjIuemlwID4gL2Rldi9udWxsCiAgLi9hd3MvaW5zdGFsbCA+IC9kZXYvbnVsbAp9CgpkYl9oYXNfYmVlbl9yZXN0b3JlZCgpIHsKICBpZiBbICEgLWYgIiRQR0RBVEEvQ1BMTl9SRVNUT1JFRCIgXTsgdGhlbgogICAgcmV0dXJuIDEKICBmaQoKICBpZiAhIGdyZXAgLXEgIlwtPiAkMSQiICIkUEdEQVRBL0NQTE5fUkVTVE9SRUQiOyB0aGVuCiAgICByZXR1cm4gMQogIGVsc2UKICAgIHJldHVybiAwCiAgZmkKfQoKcmVzdG9yZV9kYigpIHsKICB3aGlsZSBbICEgLVMgL3Zhci9ydW4vcG9zdGdyZXNxbC8ucy5QR1NRTC41NDMyIF0KICBkbwogICAgZWNobyAiV2FpdGluZyA1cyBmb3IgZGIgc29ja2V0IHRvIGJlIGF2YWlsYWJsZSIKICAgIHNsZWVwIDVzCiAgZG9uZQoKICBpZiAhIGRiX2hhc19iZWVuX3Jlc3RvcmVkICIkMSI7IHRoZW4KICAgIGVjaG8gIkl0IGFwcGVhcnMgZGIgJyQxJyBoYXMgbm90IHlldCBiZWVuIHJlc3RvcmVkIGZyb20gUzMuIEF0dGVtcHRpbmcgdG8gcmVzdG9yZSAkMSBmcm9tICQyIgogICAgaW5zdGFsbF9kZXBzCiAgICBkb2NrZXJfc2V0dXBfZGIgIyBFbnN1cmVzICRQT1NUR1JFU19EQiBleGlzdHMgKGRlZmluZWQgaW4gdGhlIGVudHJ5cG9pbnQgc2NyaXB0IGZyb20gdGhlIHBvc3RncmVzIGltYWdlKQogICAgYXdzIHMzIGNwICIkMiIgLSB8IHBnX3Jlc3RvcmUgLS1jbGVhbiAtLWlmLWV4aXN0cyAtLW5vLWFjbCAtLW5vLW93bmVyIC1kICIkMSIgLVUgIiRQT1NUR1JFU19VU0VSIgogICAgZWNobyAiJChkYXRlKTogJDIgLT4gJDEiID4+ICIkUEdEQVRBL0NQTE5fUkVTVE9SRUQiCiAgZWxzZQogICAgZWNobyAiRGIgJyQxJyBhbHJlYWR5IGV4aXN0cy4gUmVhZHkhIgogIGZpCn0KCl9tYWluICIkQCIgJgpiYWNrZ3JvdW5kUHJvY2Vzcz0kIQpyZWFkeUZpbGU9IiRQR0RBVEEvQ1BMTl9SRUFEWSIKcm0gLWYgIiRyZWFkeUZpbGUiCgppZiBbIC1uICIke1BPU1RHUkVTX0FSQ0hJVkVfVVJJOi19IiBdOyB0aGVuCiAgcmVzdG9yZV9kYiAiJFBPU1RHUkVTX0RCIiAiJFBPU1RHUkVTX0FSQ0hJVkVfVVJJIgplbHNlCiAgZWNobyAiRGVjbGluaW5nIHRvIHJlc3RvcmUgdGhlIGRiIGJlY2F1c2Ugbm8gYXJjaGl2ZSB1cmkgd2FzIHByb3ZpZGVkIgpmaQoKdG91Y2ggIiRyZWFkeUZpbGUiCndhaXQgJGJhY2tncm91bmRQcm9jZXNzCgo=
+
+#Here is the ASCII-encoded version of the script in the secret above
+#!/usr/bin/env bash
+#
+#set -euo pipefail
+#
+#source /usr/local/bin/docker-entrypoint.sh
+#
+#install_deps() {
+#  aws_cli_version="2.27.41"
+#  aws_cli_sha256="15daae6cc803984064e3d4be9cfd07c4ae8ea703633c0a0b67acc6e321f706a3"
+#  aws_cli_archive="awscli-exe-linux-x86_64-${aws_cli_version}.zip"
+#  apt-get update -y > /dev/null
+#  apt-get install curl -y > /dev/null
+#  apt-get install unzip -y > /dev/null
+#  curl --fail --location --silent --show-error "https://awscli.amazonaws.com/${aws_cli_archive}" -o awscliv2.zip
+#  echo "${aws_cli_sha256}  awscliv2.zip" | sha256sum --check --strict -
+#  unzip awscliv2.zip > /dev/null
+#  ./aws/install > /dev/null
+#}
+#
+#db_has_been_restored() {
+#  if [ ! -f "$PGDATA/CPLN_RESTORED" ]; then
+#    return 1
+#  fi
+#
+#  if ! grep -q "\-> $1$" "$PGDATA/CPLN_RESTORED"; then
+#    return 1
+#  else
+#    return 0
+#  fi
+#}
+#
+#restore_db() {
+#  while [ ! -S /var/run/postgresql/.s.PGSQL.5432 ]
+#  do
+#    echo "Waiting 5s for db socket to be available"
+#    sleep 5s
+#  done
+#
+#  if ! db_has_been_restored "$1"; then
+#    echo "It appears db '$1' has not yet been restored from S3. Attempting to restore $1 from $2"
+#    install_deps
+#    docker_setup_db # Ensures $POSTGRES_DB exists (defined in the entrypoint script from the postgres image)
+#    aws s3 cp "$2" - | pg_restore --clean --if-exists --no-acl --no-owner -d "$1" -U "$POSTGRES_USER"
+#    echo "$(date): $2 -> $1" >> "$PGDATA/CPLN_RESTORED"
+#  else
+#    echo "Db '$1' already exists. Ready!"
+#  fi
+#}
+#
+#_main "$@" &
+#backgroundProcess=$!
+#readyFile="$PGDATA/CPLN_READY"
+#rm -f "$readyFile"
+#
+#if [ -n "${POSTGRES_ARCHIVE_URI:-}" ]; then
+#  restore_db "$POSTGRES_DB" "$POSTGRES_ARCHIVE_URI"
+#else
+#  echo "Declining to restore the db because no archive uri was provided"
+#fi
+#
+#touch "$readyFile"
+#wait $backgroundProcess
+
+---
+kind: identity
+name: "{{APP_NAME}}-pg-identity"
+description: "{{APP_NAME}}-pg-identity"
+
+---
+kind: policy
+name: "{{APP_NAME}}-pg-access"
+description: "{{APP_NAME}}-pg-access"
+bindings:
+  - permissions:
+      - reveal
+# Uncomment these two
+#      - use
+#      - view
+    principalLinks:
+      - "//gvc/{{APP_NAME}}/identity/{{APP_NAME}}-pg-identity"
+      # cpflow apply-template replaces {{APP_IDENTITY_LINK}} with the full app workload identity link.
+      # Example: //gvc/{{APP_NAME}}/identity/{{APP_NAME}}-identity.
+      - "{{APP_IDENTITY_LINK}}"
+targetKind: secret
+targetLinks:
+  - "//secret/{{APP_NAME}}-pg"
+  - "//secret/{{APP_NAME}}-pg-script"
+
+---
+kind: workload
+name: postgres
+description: postgres
+spec:
+  type: stateful
+  containers:
+    - cpu: 1000m
+      memory: 512Mi
+      env:
+        # Uncomment next two envs will cause the db to be restored from the archive uri
+        #        - name: POSTGRES_ARCHIVE_URI  #Use this var to control the automatic restore behavior. If you leave it out, the db will start empty.
+        #          value: s3://YOUR_BUCKET/PATH_TO_ARCHIVE_FILE
+        # - name: POSTGRES_DB #The name of the initial db in case of doing a restore
+        #  value: test
+        - name: PGDATA #The location postgres stores the db. This can be anything other than /var/lib/postgresql/data, but it must be inside the mount point for the volume set
+          value: "/var/lib/postgresql/data/pg_data"
+        - name: POSTGRES_PASSWORD #The password for the default user
+          value: "cpln://secret/{{APP_NAME}}-pg.password"
+        - name: POSTGRES_USER #The name of the default user
+          value: "cpln://secret/{{APP_NAME}}-pg.username"
+      name: postgres
+      image: postgres:15
+      command: /bin/bash
+      args:
+        - "-c"
+        - "cat /usr/local/bin/cpln-entrypoint.sh >> ./cpln-entrypoint.sh && chmod u+x ./cpln-entrypoint.sh && ./cpln-entrypoint.sh postgres"
+      #command:  "cpln-entrypoint.sh"
+      #args:
+      #  - "postgres"
+      ports:
+        - number: 5432
+          protocol: tcp
+      volumes:
+        - uri: "cpln://volumeset/{{APP_NAME}}-pg-vs"
+          path: "/var/lib/postgresql/data"
+        # Make the ENV value for the entry script a file
+        - uri: "cpln://secret/{{APP_NAME}}-pg-script"
+          path: "/usr/local/bin/cpln-entrypoint.sh"
+      inheritEnv: false
+      livenessProbe:
+        tcpSocket:
+          port: 5432
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 3
+      readinessProbe:
+        exec:
+          command:
+            - /bin/bash
+            - -c
+            - 'pg_isready -U "$POSTGRES_USER" -d "${POSTGRES_DB:-$POSTGRES_USER}" && test -f "$PGDATA/CPLN_READY"'
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureThreshold: 3
+  identityLink: "//identity/{{APP_NAME}}-pg-identity"
+  defaultOptions:
+    capacityAI: false
+    autoscaling:
+      metric: cpu
+      target: 95
+      maxScale: 1
+  firewallConfig:
+    external:
+      inboundAllowCIDR: []
+      outboundAllowCIDR:
+        - 0.0.0.0/0
+    internal:
+      inboundAllowType: same-gvc

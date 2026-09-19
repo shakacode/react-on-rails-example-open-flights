@@ -38,7 +38,11 @@ module Resettable
   #
   # @return [Nil]
   def send_reset_password_email(email, token)
-    ResetPasswordWorker.perform_async(email, token)
+    ResetPasswordWorker.perform_async(email, token, password_reset_root_url)
+  end
+
+  def password_reset_root_url
+    (ENV['CPLN_GLOBAL_ENDPOINT'].presence || ENV.fetch('ROOT_URL')).chomp('/')
   end
 
   def check_email

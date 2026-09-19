@@ -1,0 +1,46 @@
+kind: volumeset
+name: "{{APP_NAME}}-redis-vs"
+description: "{{APP_NAME}}-redis-vs"
+spec:
+  autoscaling:
+    maxCapacity: 100
+    minFreePercentage: 10
+    scalingFactor: 1.2
+  fileSystemType: ext4
+  initialCapacity: 10
+  performanceClass: general-purpose-ssd
+  snapshots:
+    createFinalSnapshot: true
+    retentionDuration: 7d
+
+---
+kind: workload
+name: redis
+spec:
+  type: stateful
+  containers:
+    - name: redis
+      image: redis:7.4-alpine
+      args:
+        - redis-server
+        - --dir
+        - /data
+        - --appendonly
+        - "yes"
+        - --appendfsync
+        - everysec
+      ports:
+        - number: 6379
+          protocol: tcp
+      volumes:
+        - uri: "cpln://volumeset/{{APP_NAME}}-redis-vs"
+          path: /data
+  defaultOptions:
+    autoscaling:
+      minScale: 1
+      maxScale: 1
+    capacityAI: false
+  # Redis is intentionally reachable only by workloads in this app's GVC.
+  firewallConfig:
+    internal:
+      inboundAllowType: same-gvc
