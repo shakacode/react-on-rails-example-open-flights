@@ -32,8 +32,15 @@ to staging, production, or third-party services:
 cpln secret create-dictionary \
   --name react-on-rails-open-flights-example-review-secrets \
   --org "$CPLN_ORG_STAGING" \
-  --entry "SECRET_KEY_BASE=$(bin/rails secret)"
+  --entry "SECRET_KEY_BASE=$(bin/rails secret)" \
+  --entry "DATABASE_URL=postgresql://the_user:the_password@postgres:5432/the_user"
 ```
+
+The disposable review URL targets the `postgres` workload inside each review
+app GVC and matches the checked-in review/demo credentials. Replace
+`the_user` and `the_password` in both this command and
+`.controlplane/templates/postgres.yml` before bootstrapping review apps; URL
+encode either value if it contains reserved URL characters.
 
 Bootstrap the persistent staging and production apps before their first deploy:
 
