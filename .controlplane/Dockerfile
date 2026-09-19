@@ -39,12 +39,13 @@ RUN printf '%s\n' '#!/bin/sh' 'exec corepack yarn "$@"' > /usr/bin/yarn && \
 COPY Gemfile* ./
 
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential && \
+    apt-get install --no-install-recommends -y build-essential libpq-dev libpq5 && \
     bundle config set without 'development test' && \
     bundle config set with 'production' && \
     bundle install --jobs=3 --retry=3 && \
-    apt-get purge -y --auto-remove build-essential && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+    apt-mark manual libpq5 && \
+    apt-get purge -y --auto-remove build-essential libpq-dev && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 COPY . ./
 
@@ -57,7 +58,11 @@ RUN if [ -f package.json ]; then \
       if [ -f yarn.lock ]; then \
         if printf '%s' "$package_manager" | grep -q '^yarn@'; then \
           corepack prepare "$package_manager" --activate && \
-            (corepack yarn install --immutable || corepack yarn install --frozen-lockfile); \
+            if printf '%s' "$package_manager" | grep -q '^yarn@1\.'; then \
+              corepack yarn install --frozen-lockfile; \
+            else \
+              corepack yarn install --immutable; \
+            fi; \
         else \
           npm install -g "yarn@${YARN_CLASSIC_VERSION}" && \
             (yarn install --immutable || yarn install --frozen-lockfile); \
@@ -79,11 +84,7 @@ RUN if [ -f package.json ]; then \
 
 ENV RAILS_ENV=production
 
-# Compiling assets requires any non-blank value, but the placeholder must not
-# remain in the final image environment.
-RUN SECRET_KEY_BASE=NOT_USED_NON_BLANK bin/shakapacker-precompile-hook
-
-
+# Rails invokes the configured Shakapacker precompile hook from assets:precompile.
 RUN SECRET_KEY_BASE=NOT_USED_NON_BLANK rails assets:precompile
 
 # add entrypoint

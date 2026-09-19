@@ -21,7 +21,6 @@ aliases:
     additional_workloads:
       - postgres
 
-    maintenance_workload: maintenance
     release_script: release_script.sh
 
     stale_app_image_deployed_days: 5

@@ -47,7 +47,6 @@ concurrency:
 
 jobs:
   promote-to-production:
-    if: github.event.inputs.confirm_promotion == 'promote'
     runs-on: ubuntu-latest
     # This normal caller-repo job declares the protected production Environment
     # directly, so GitHub exposes environment secrets in this job after the
@@ -61,6 +60,17 @@ jobs:
       staging_commit: ${{ steps.copy-image.outputs.staging_commit }}
 
     steps:
+      - name: Validate promotion confirmation
+        env:
+          CONFIRM_PROMOTION: ${{ github.event.inputs.confirm_promotion }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${CONFIRM_PROMOTION}" != "promote" ]]; then
+            echo "::error::Type 'promote' to confirm promotion of staging to production."
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:

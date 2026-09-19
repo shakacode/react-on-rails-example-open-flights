@@ -158,11 +158,15 @@ spec:
       livenessProbe:
         tcpSocket:
           port: 5432
-        failureThreshold: 1
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 3
       readinessProbe:
         tcpSocket:
           port: 5432
-        failureThreshold: 1
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureThreshold: 3
   identityLink: "//identity/{{APP_NAME}}-pg-identity"
   defaultOptions:
     capacityAI: false

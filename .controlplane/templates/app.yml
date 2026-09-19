@@ -4,7 +4,7 @@ name: "{{APP_NAME}}"
 spec:
   env:
     - name: DATABASE_URL
-      value: 'postgres://the_user:the_password@postgres.{{APP_NAME}}.cpln.local:5432/{{APP_NAME}}'
+      value: "cpln://secret/{{APP_SECRETS}}.DATABASE_URL"
     - name: RAILS_ENV
       value: production
     - name: RAILS_LOG_TO_STDOUT

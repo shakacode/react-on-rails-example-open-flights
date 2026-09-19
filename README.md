@@ -8,7 +8,7 @@ This app is intended to be a simple example of a CRUD app built with **Ruby on R
 This repo now includes the shared `cpflow` GitHub flow used across the React on
 Rails demo apps:
 
-- opt-in review apps via `/deploy-review-app`
+- opt-in review apps via `+review-app-deploy`
 - automatic staging deploys from `main`
 - manual promotion from staging to production
 

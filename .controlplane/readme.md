@@ -17,9 +17,10 @@ is made live. Capacity AI right-sizes the Rails workload; PostgreSQL remains
 manually sized.
 
 The generated PostgreSQL template contains review/demo-only placeholder
-credentials. Replace both the database secret values and the matching
-`DATABASE_URL` credentials before bootstrapping persistent staging or
-production apps.
+credentials. Replace both database secret values before bootstrapping any app,
+then add a matching full `DATABASE_URL` value to that app's generated secret
+dictionary. The Rails template reads `{{APP_SECRETS}}.DATABASE_URL`; never
+commit the real connection string.
 
 ## One-Time Bootstrap
 
@@ -48,8 +49,8 @@ cpflow setup-app \
   --skip-post-creation-hook
 ```
 
-Add distinct `SECRET_KEY_BASE` values to the generated staging and production
-app secret dictionaries. For later template changes, run `cpflow
+Add distinct `SECRET_KEY_BASE` and `DATABASE_URL` values to the generated
+staging and production app secret dictionaries. For later template changes, run `cpflow
 apply-template` and ensure the app identity can `reveal` the app secret policy.
 
 ## GitHub Configuration

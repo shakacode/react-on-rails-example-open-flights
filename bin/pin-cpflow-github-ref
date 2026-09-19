@@ -74,6 +74,14 @@ workflow_paths.each do |path|
             .gsub(production_setup_ref_pattern, "\\1#{ref}")
             .gsub(CPFLOW_CHECKOUT_REF_PATTERN, "\\1#{ref}")
 
+  if text.include?("name: Checkout control-plane-flow actions")
+    checkout_ref = updated.match(CPFLOW_CHECKOUT_REF_PATTERN)&.[](0)
+    unless checkout_ref&.end_with?(ref)
+      warn "Could not update the control-plane-flow checkout ref in #{path}."
+      exit 1
+    end
+  end
+
   next if updated == text
 
   File.write(path, updated)
