@@ -24,7 +24,17 @@ DISABLE_SPRING=1 \
   SECRET_KEY_BASE=test \
   DATABASE_URL=postgresql://test:test@127.0.0.1/test \
   REDIS_URL=redis://127.0.0.1:6379/1 \
-  bundle exec rails runner 'abort "production Action Cable adapter is not Redis" unless ActionCable.server.config.pubsub_adapter == ActionCable::SubscriptionAdapter::Redis'
+  ROOT_URL=https://configured.example \
+  CPLN_GLOBAL_ENDPOINT=https://rails-review.ready.controlplane.us/ \
+  bundle exec rails runner '
+    abort "production Action Cable adapter is not Redis" unless ActionCable.server.config.pubsub_adapter == ActionCable::SubscriptionAdapter::Redis
+    controller = Api::V1::AuthController.new
+    abort "reset links must use the platform endpoint" unless controller.send(:password_reset_root_url) == "https://rails-review.ready.controlplane.us"
+    ENV.delete("CPLN_GLOBAL_ENDPOINT")
+    abort "reset links must fall back to ROOT_URL" unless controller.send(:password_reset_root_url) == "https://configured.example"
+    expected_parameters = [[:req, :email], [:req, :token], [:opt, :root_url]]
+    abort "reset worker must accept legacy two-argument jobs" unless ResetPasswordWorker.instance_method(:perform).parameters == expected_parameters
+  '
 
 ruby <<'RUBY'
 require "base64"
@@ -66,10 +76,14 @@ unless production_config.include?("config.action_mailer.delivery_method = :smtp"
 end
 
 resettable = File.read("app/controllers/concerns/resettable.rb")
-unless resettable.include?("request.get_header('HTTP_HOST')") &&
-       resettable.include?("\\.controlplane\\.us\\z") &&
+unless resettable.include?("ENV['CPLN_GLOBAL_ENDPOINT'].presence || ENV.fetch('ROOT_URL')") &&
        resettable.include?("ResetPasswordWorker.perform_async(email, token, password_reset_root_url)")
-  abort "review apps must queue reset mail with their validated Control Plane request origin"
+  abort "review apps must queue reset mail with their platform-provided endpoint"
+end
+
+reset_worker = File.read("app/workers/reset_password_worker.rb")
+unless reset_worker.include?("root_url = ENV.fetch('ROOT_URL')")
+  abort "reset workers must accept queued legacy jobs without an app-specific root URL"
 end
 
 reset_mailer = File.read("app/mailers/reset_password_mailer.rb")
@@ -114,7 +128,8 @@ end
 unless decoded_entrypoint.include?('aws_cli_version="2.27.41"') &&
        decoded_entrypoint.include?('awscli-exe-linux-x86_64-${aws_cli_version}.zip') &&
        decoded_entrypoint.include?('15daae6cc803984064e3d4be9cfd07c4ae8ea703633c0a0b67acc6e321f706a3') &&
-       decoded_entrypoint.include?("sha256sum --check --strict")
+       decoded_entrypoint.include?("sha256sum --check --strict") &&
+       decoded_entrypoint.include?("pg_restore --clean --if-exists")
   abort "PostgreSQL restore must pin and verify the AWS CLI installer"
 end
 
