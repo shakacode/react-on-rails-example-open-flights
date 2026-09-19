@@ -1,6 +1,8 @@
 module Resettable
   extend ActiveSupport::Concern
 
+  CONTROL_PLANE_HOST = /\A[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.controlplane\.us\z/
+
   included do
     before_action :check_email, only: :reset
   end
@@ -42,13 +44,9 @@ module Resettable
   end
 
   def password_reset_root_url
-    request_uri = URI.parse(request.base_url)
-    if request_uri.scheme == 'https' && request_uri.host&.end_with?('.controlplane.us')
-      return request_uri.to_s.chomp('/')
-    end
+    routed_host = request.get_header('HTTP_HOST').to_s.downcase.sub(/:\d+\z/, '')
+    return "https://#{routed_host}" if routed_host.match?(CONTROL_PLANE_HOST)
 
-    ENV.fetch('ROOT_URL')
-  rescue URI::InvalidURIError
     ENV.fetch('ROOT_URL')
   end
 

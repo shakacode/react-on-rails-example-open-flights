@@ -53,9 +53,10 @@ encode either value if it contains reserved URL characters.
 Password reset mail uses SendGrid SMTP. Pull-request code can read every review
 app secret, so use only a restricted, disposable review API key and an approved
 review sender. Each review app derives its own HTTPS reset origin only from its
-validated `*.controlplane.us` request host; the shared `ROOT_URL` is a fallback
-for non-Control Plane hosts. Omit password-reset testing rather than exposing
-staging or production mail credentials to a review app.
+validated, routed `HTTP_HOST` under `*.controlplane.us`; forwarded host headers
+cannot override it. The shared `ROOT_URL` is a fallback for non-Control Plane
+hosts. Omit password-reset testing rather than exposing staging or production
+mail credentials to a review app.
 
 Bootstrap the persistent staging and production apps before their first deploy:
 
