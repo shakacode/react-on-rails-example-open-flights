@@ -61,9 +61,9 @@ redis_documents = YAML.load_stream(File.read(".controlplane/templates/redis.yml"
 redis_volume = redis_documents.find { |document| document.is_a?(Hash) && document["kind"] == "volumeset" }
 redis = redis_documents.find { |document| document.is_a?(Hash) && document["kind"] == "workload" }
 redis_container = redis.fetch("spec").fetch("containers").fetch(0)
-expected_redis_args = ["--dir", "/data", "--appendonly", "yes", "--appendfsync", "everysec"]
+expected_redis_args = ["redis-server", "--dir", "/data", "--appendonly", "yes", "--appendfsync", "everysec"]
 abort "redis template must provision durable storage" unless redis_volume && redis.fetch("spec").fetch("type") == "stateful"
-abort "redis must use append-only persistence" unless redis_container["command"] == "redis-server" && redis_container["args"] == expected_redis_args
+abort "redis must preserve the image entrypoint and use append-only persistence" unless !redis_container.key?("command") && redis_container["args"] == expected_redis_args
 unless redis_container.fetch("volumes").any? { |volume| volume["path"] == "/data" && volume["uri"].include?("redis-vs") }
   abort "redis must mount its volume set at /data"
 end
