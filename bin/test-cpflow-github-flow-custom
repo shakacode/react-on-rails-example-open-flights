@@ -111,6 +111,12 @@ readable_entrypoint = readable_lines.shift.to_s + readable_lines.map { |line| li
 unless decoded_entrypoint.rstrip == readable_entrypoint.rstrip
   abort "encoded PostgreSQL entrypoint differs from its readable source"
 end
+unless decoded_entrypoint.include?('aws_cli_version="2.27.41"') &&
+       decoded_entrypoint.include?('awscli-exe-linux-x86_64-${aws_cli_version}.zip') &&
+       decoded_entrypoint.include?('15daae6cc803984064e3d4be9cfd07c4ae8ea703633c0a0b67acc6e321f706a3') &&
+       decoded_entrypoint.include?("sha256sum --check --strict")
+  abort "PostgreSQL restore must pin and verify the AWS CLI installer"
+end
 
 postgres = postgres_documents.find { |document| document.is_a?(Hash) && document["kind"] == "workload" }
 readiness = postgres.fetch("spec").fetch("containers").fetch(0).fetch("readinessProbe")

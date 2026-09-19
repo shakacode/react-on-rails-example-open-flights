@@ -12,6 +12,7 @@ USAGE = <<~USAGE
   workflow's pinned control-plane-flow checkout and setup validation ref.
   Regenerate from the cpflow gem when templates changed.
   Use --allow-moving-ref only for short-lived local branch/ref experiments.
+  Validate an experiment with ALLOW_MOVING_CPFLOW_REF=1 bin/test-cpflow-github-flow.
 USAGE
 
 ALLOWED_OPTIONS = ["--allow-moving-ref"].freeze
