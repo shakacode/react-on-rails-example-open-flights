@@ -13,6 +13,14 @@ spec:
       value: "true"
     - name: REDIS_URL
       value: "redis://redis.{{APP_NAME}}.cpln.local:6379"
+    - name: ROOT_URL
+      value: "cpln://secret/{{APP_SECRETS}}.ROOT_URL"
+    - name: SENDGRID_USERNAME
+      value: "cpln://secret/{{APP_SECRETS}}.SENDGRID_USERNAME"
+    - name: SENDGRID_PASSWORD
+      value: "cpln://secret/{{APP_SECRETS}}.SENDGRID_PASSWORD"
+    - name: DEFAULT_FROM_EMAIL
+      value: "cpln://secret/{{APP_SECRETS}}.DEFAULT_FROM_EMAIL"
     - name: SECRET_KEY_BASE
       value: "cpln://secret/{{APP_SECRETS}}.SECRET_KEY_BASE"
   staticPlacement:

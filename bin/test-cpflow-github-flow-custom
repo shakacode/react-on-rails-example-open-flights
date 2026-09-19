@@ -51,6 +51,19 @@ app = YAML.load_file(".controlplane/templates/app.yml")
 app_env = app.fetch("spec").fetch("env").to_h { |entry| [entry.fetch("name"), entry.fetch("value")] }
 expected_redis_url = "redis://redis.{{APP_NAME}}.cpln.local:6379"
 abort "app template must configure REDIS_URL" unless app_env["REDIS_URL"] == expected_redis_url
+%w[ROOT_URL SENDGRID_USERNAME SENDGRID_PASSWORD DEFAULT_FROM_EMAIL].each do |name|
+  expected_value = "cpln://secret/{{APP_SECRETS}}.#{name}"
+  abort "app template must load #{name} from the app secret" unless app_env[name] == expected_value
+end
+
+production_config = File.read("config/environments/production.rb")
+unless production_config.include?("config.action_mailer.delivery_method = :smtp") &&
+       production_config.include?("address: 'smtp.sendgrid.net'") &&
+       production_config.include?("ENV['SENDGRID_USERNAME']") &&
+       production_config.include?("ENV['SENDGRID_PASSWORD']") &&
+       production_config.include?("ENV.fetch('ROOT_URL'")
+  abort "production must configure SendGrid SMTP and the reset URL host"
+end
 
 sidekiq = YAML.load_file(".controlplane/templates/sidekiq.yml")
 sidekiq_container = sidekiq.fetch("spec").fetch("containers").fetch(0)

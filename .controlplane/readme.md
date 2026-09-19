@@ -37,7 +37,11 @@ cpln secret create-dictionary \
   --name react-on-rails-open-flights-example-review-secrets \
   --org "$CPLN_ORG_STAGING" \
   --entry "SECRET_KEY_BASE=$(bin/rails secret)" \
-  --entry "DATABASE_URL=postgresql://the_user:the_password@postgres:5432/the_user"
+  --entry "DATABASE_URL=postgresql://the_user:the_password@postgres:5432/the_user" \
+  --entry "ROOT_URL=https://replace-with-the-review-app-url" \
+  --entry "SENDGRID_USERNAME=apikey" \
+  --entry "SENDGRID_PASSWORD=replace-with-a-review-only-api-key" \
+  --entry "DEFAULT_FROM_EMAIL=review-app@example.com"
 ```
 
 The disposable review URL targets the `postgres` workload inside each review
@@ -45,6 +49,12 @@ app GVC and matches the checked-in review/demo credentials. Replace
 `the_user` and `the_password` in both this command and
 `.controlplane/templates/postgres.yml` before bootstrapping review apps; URL
 encode either value if it contains reserved URL characters.
+
+Password reset mail uses SendGrid SMTP. Pull-request code can read every review
+app secret, so use only a restricted, disposable review API key and an approved
+review sender. After deployment, replace `ROOT_URL` with that review app's
+reported HTTPS URL. Omit password-reset testing rather than exposing staging or
+production mail credentials to a review app.
 
 Bootstrap the persistent staging and production apps before their first deploy:
 
@@ -60,11 +70,14 @@ cpflow setup-app \
   --skip-post-creation-hook
 ```
 
-Add distinct `SECRET_KEY_BASE` and `DATABASE_URL` values to the generated
-staging and production app secret dictionaries. The checked-in app template
-sets `REDIS_URL` to the internal Redis workload; no public Redis endpoint or
-password is required. For later template changes, run `cpflow apply-template`
-and ensure the app identity can `reveal` the app secret policy.
+Add distinct `SECRET_KEY_BASE`, `DATABASE_URL`, `ROOT_URL`,
+`SENDGRID_USERNAME`, `SENDGRID_PASSWORD`, and `DEFAULT_FROM_EMAIL` values to the
+generated staging and production app secret dictionaries. Set each `ROOT_URL`
+to that app's public HTTPS endpoint, and use environment-specific SendGrid
+credentials and approved sender addresses. The checked-in app template sets
+`REDIS_URL` to the internal Redis workload; no public Redis endpoint or password
+is required. For later template changes, run `cpflow apply-template` and ensure
+the app identity can `reveal` the app secret policy.
 
 ## GitHub Configuration
 
