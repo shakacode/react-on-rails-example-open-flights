@@ -15,9 +15,10 @@ provision a stateful `postgres` workload and volume set, an internal `redis`
 workload, and app-image-backed `rails` and `sidekiq` workloads. The release
 script runs `bin/rails db:prepare` before a new image is made live. Capacity AI
 right-sizes the Rails and Sidekiq workloads; PostgreSQL and Redis remain
-manually sized. PostgreSQL does not report ready until any configured archive
-restore succeeds, so release commands cannot race a partially restored
-database.
+manually sized. Redis stores Sidekiq queues on its volume set with append-only
+persistence, and Action Cable uses the same internal Redis endpoint.
+PostgreSQL does not report ready until any configured archive restore succeeds,
+so release commands cannot race a partially restored database.
 
 The generated PostgreSQL template contains review/demo-only placeholder
 credentials. Replace both database secret values before bootstrapping any app,

@@ -49,6 +49,20 @@ sidekiq_container = sidekiq.fetch("spec").fetch("containers").fetch(0)
 abort "sidekiq must deploy the app image" unless sidekiq_container["image"] == "{{APP_IMAGE_LINK}}"
 abort "sidekiq workload command is invalid" unless sidekiq_container["command"] == "bundle" && sidekiq_container["args"] == %w[exec sidekiq]
 
+redis_documents = YAML.load_stream(File.read(".controlplane/templates/redis.yml"))
+redis_volume = redis_documents.find { |document| document.is_a?(Hash) && document["kind"] == "volumeset" }
+redis = redis_documents.find { |document| document.is_a?(Hash) && document["kind"] == "workload" }
+redis_container = redis.fetch("spec").fetch("containers").fetch(0)
+expected_redis_args = ["--dir", "/data", "--appendonly", "yes", "--appendfsync", "everysec"]
+abort "redis template must provision durable storage" unless redis_volume && redis.fetch("spec").fetch("type") == "stateful"
+abort "redis must use append-only persistence" unless redis_container["command"] == "redis-server" && redis_container["args"] == expected_redis_args
+unless redis_container.fetch("volumes").any? { |volume| volume["path"] == "/data" && volume["uri"].include?("redis-vs") }
+  abort "redis must mount its volume set at /data"
+end
+
+cable = File.read("config/cable.yml")
+abort "production Action Cable must use REDIS_URL" unless cable.include?('ENV.fetch("REDIS_URL"')
+
 postgres_text = File.read(".controlplane/templates/postgres.yml")
 postgres_documents = YAML.load_stream(postgres_text)
 entrypoint_secret = postgres_documents.find do |document|
