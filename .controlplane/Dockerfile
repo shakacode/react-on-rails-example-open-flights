@@ -89,7 +89,12 @@ RUN SECRET_KEY_BASE=NOT_USED_NON_BLANK rails assets:precompile
 
 # add entrypoint
 COPY .controlplane/entrypoint.sh ./
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh && \
+    groupadd --system --gid 1000 rails && \
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    chown -R rails:rails /app
+
+USER 1000:1000
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 CMD ["rails", "s"]

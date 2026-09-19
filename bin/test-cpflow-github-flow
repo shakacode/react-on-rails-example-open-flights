@@ -154,3 +154,8 @@ actionlint \
   -ignore "SC2129" \
   -ignore 'property "workflow_(ref|sha|repository|file_path)" is not defined in object type' \
   .github/workflows/cpflow-*.yml
+
+if [[ -x bin/test-cpflow-github-flow-custom ]]; then
+  echo "==> downstream cpflow checks"
+  bin/test-cpflow-github-flow-custom
+fi

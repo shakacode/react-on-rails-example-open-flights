@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+generated_pack="app/javascript/generated/server-bundle-generated.js"
+snapshot="$(mktemp)"
+trap 'rm -f "${snapshot}"' EXIT
+
+cp "${generated_pack}" "${snapshot}"
+
+bundle exec rails react_on_rails:generate_packs >/dev/null
+
+if ! cmp -s "${snapshot}" "${generated_pack}"; then
+  diff -u "${snapshot}" "${generated_pack}" || true
+  echo "${generated_pack} is stale; run bundle exec rails react_on_rails:generate_packs and commit the result." >&2
+  exit 1
+fi
+
+echo "React on Rails generated server pack is current."
