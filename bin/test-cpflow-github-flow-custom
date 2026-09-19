@@ -65,6 +65,18 @@ unless production_config.include?("config.action_mailer.delivery_method = :smtp"
   abort "production must configure SendGrid SMTP and the reset URL host"
 end
 
+resettable = File.read("app/controllers/concerns/resettable.rb")
+unless resettable.include?("request_uri.host&.end_with?('.controlplane.us')") &&
+       resettable.include?("ResetPasswordWorker.perform_async(email, token, password_reset_root_url)")
+  abort "review apps must queue reset mail with their validated Control Plane request origin"
+end
+
+reset_mailer = File.read("app/mailers/reset_password_mailer.rb")
+reset_view = File.read("app/views/reset_password_mailer/call.html.erb")
+unless reset_mailer.include?("@email, @token, @root_url = args") && reset_view.include?("<%= @root_url %>")
+  abort "reset mail must render the queued app-specific root URL"
+end
+
 sidekiq = YAML.load_file(".controlplane/templates/sidekiq.yml")
 sidekiq_container = sidekiq.fetch("spec").fetch("containers").fetch(0)
 abort "sidekiq must deploy the app image" unless sidekiq_container["image"] == "{{APP_IMAGE_LINK}}"

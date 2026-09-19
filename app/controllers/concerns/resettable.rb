@@ -38,7 +38,18 @@ module Resettable
   #
   # @return [Nil]
   def send_reset_password_email(email, token)
-    ResetPasswordWorker.perform_async(email, token)
+    ResetPasswordWorker.perform_async(email, token, password_reset_root_url)
+  end
+
+  def password_reset_root_url
+    request_uri = URI.parse(request.base_url)
+    if request_uri.scheme == 'https' && request_uri.host&.end_with?('.controlplane.us')
+      return request_uri.to_s.chomp('/')
+    end
+
+    ENV.fetch('ROOT_URL')
+  rescue URI::InvalidURIError
+    ENV.fetch('ROOT_URL')
   end
 
   def check_email

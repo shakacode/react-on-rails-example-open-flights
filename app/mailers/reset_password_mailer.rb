@@ -3,7 +3,7 @@ class ResetPasswordMailer < ApplicationMailer
 
   # send a reset password email when a user loses password
   def call(*args)
-    @email, @token = args
+    @email, @token, @root_url = args
 
     mail(:to => @email, :subject => 'Password Reset')
   end
