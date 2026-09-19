@@ -1,0 +1,19 @@
+kind: workload
+name: redis
+spec:
+  type: standard
+  containers:
+    - name: redis
+      image: redis:7.4-alpine
+      ports:
+        - number: 6379
+          protocol: tcp
+  defaultOptions:
+    autoscaling:
+      minScale: 1
+      maxScale: 1
+    capacityAI: false
+  # Redis is intentionally reachable only by workloads in this app's GVC.
+  firewallConfig:
+    internal:
+      inboundAllowType: same-gvc

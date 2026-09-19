@@ -10,11 +10,14 @@ release, repin them with `bin/pin-cpflow-github-ref <release-commit-sha>`.
 
 ## Runtime Shape
 
-The app uses PostgreSQL in production. The Control Plane templates provision a
-stateful `postgres` workload and volume set alongside the public `rails`
-workload, and the release script runs `bin/rails db:prepare` before a new image
-is made live. Capacity AI right-sizes the Rails workload; PostgreSQL remains
-manually sized.
+The app uses PostgreSQL and Sidekiq in production. The Control Plane templates
+provision a stateful `postgres` workload and volume set, an internal `redis`
+workload, and app-image-backed `rails` and `sidekiq` workloads. The release
+script runs `bin/rails db:prepare` before a new image is made live. Capacity AI
+right-sizes the Rails and Sidekiq workloads; PostgreSQL and Redis remain
+manually sized. PostgreSQL does not report ready until any configured archive
+restore succeeds, so release commands cannot race a partially restored
+database.
 
 The generated PostgreSQL template contains review/demo-only placeholder
 credentials. Replace both database secret values before bootstrapping any app,
@@ -57,8 +60,10 @@ cpflow setup-app \
 ```
 
 Add distinct `SECRET_KEY_BASE` and `DATABASE_URL` values to the generated
-staging and production app secret dictionaries. For later template changes, run `cpflow
-apply-template` and ensure the app identity can `reveal` the app secret policy.
+staging and production app secret dictionaries. The checked-in app template
+sets `REDIS_URL` to the internal Redis workload; no public Redis endpoint or
+password is required. For later template changes, run `cpflow apply-template`
+and ensure the app identity can `reveal` the app secret policy.
 
 ## GitHub Configuration
 

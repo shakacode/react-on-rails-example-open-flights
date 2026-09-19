@@ -32,7 +32,7 @@ type: opaque
 data:
   encoding: base64
   payload: >-
-    IyEvdXNyL2Jpbi9lbnYgYmFzaAoKc2V0IC1ldW8gcGlwZWZhaWwKCnNvdXJjZSAvdXNyL2xvY2FsL2Jpbi9kb2NrZXItZW50cnlwb2ludC5zaAoKaW5zdGFsbF9kZXBzKCkgewogIGFwdC1nZXQgdXBkYXRlIC15ID4gL2Rldi9udWxsCiAgYXB0LWdldCBpbnN0YWxsIGN1cmwgLXkgPiAvZGV2L251bGwKICBhcHQtZ2V0IGluc3RhbGwgdW56aXAgLXkgPiAvZGV2L251bGwKICBjdXJsICJodHRwczovL2F3c2NsaS5hbWF6b25hd3MuY29tL2F3c2NsaS1leGUtbGludXgteDg2XzY0LnppcCIgLW8gImF3c2NsaXYyLnppcCIgPiAvZGV2L251bGwKICB1bnppcCBhd3NjbGl2Mi56aXAgPiAvZGV2L251bGwKICAuL2F3cy9pbnN0YWxsID4gL2Rldi9udWxsCn0KCmRiX2hhc19iZWVuX3Jlc3RvcmVkKCkgewogIGlmIFsgISAtZiAiJFBHREFUQS9DUExOX1JFU1RPUkVEIiBdOyB0aGVuCiAgICByZXR1cm4gMQogIGZpCgogIGlmICEgZ3JlcCAtcSAiXC0+ICQxJCIgIiRQR0RBVEEvQ1BMTl9SRVNUT1JFRCI7IHRoZW4KICAgIHJldHVybiAxCiAgZWxzZQogICAgcmV0dXJuIDAKICBmaQp9CgpyZXN0b3JlX2RiKCkgewogIHdoaWxlIFsgISAtUyAvdmFyL3J1bi9wb3N0Z3Jlc3FsLy5zLlBHU1FMLjU0MzIgXQogIGRvCiAgICBlY2hvICJXYWl0aW5nIDVzIGZvciBkYiBzb2NrZXQgdG8gYmUgYXZhaWxhYmxlIgogICAgc2xlZXAgNXMKICBkb25lCgogIGlmICEgZGJfaGFzX2JlZW5fcmVzdG9yZWQgIiQxIjsgdGhlbgogICAgZWNobyAiSXQgYXBwZWFycyBkYiAnJDEnIGhhcyBub3QgeWV0IGJlZW4gcmVzdG9yZWQgZnJvbSBTMy4gQXR0ZW1wdGluZyB0byByZXN0b3JlICQxIGZyb20gJDIiCiAgICBpbnN0YWxsX2RlcHMKICAgIGRvY2tlcl9zZXR1cF9kYiAjIEVuc3VyZXMgJFBPU1RHUkVTX0RCIGV4aXN0cyAoZGVmaW5lZCBpbiB0aGUgZW50cnlwb2ludCBzY3JpcHQgZnJvbSB0aGUgcG9zdGdyZXMgaW1hZ2UpCiAgICBhd3MgczMgY3AgIiQyIiAtIHwgcGdfcmVzdG9yZSAtLWNsZWFuIC0tbm8tYWNsIC0tbm8tb3duZXIgLWQgIiQxIiAtVSAiJFBPU1RHUkVTX1VTRVIiCiAgICBlY2hvICIkKGRhdGUpOiAkMiAtPiAkMSIgPj4gIiRQR0RBVEEvQ1BMTl9SRVNUT1JFRCIKICBlbHNlCiAgICBlY2hvICJEYiAnJDEnIGFscmVhZHkgZXhpc3RzLiBSZWFkeSEiCiAgZmkKfQoKX21haW4gIiRAIiAmCmJhY2tncm91bmRQcm9jZXNzPSQhCgppZiBbIC1uICIke1BPU1RHUkVTX0FSQ0hJVkVfVVJJOi19IiBdOyB0aGVuCiAgcmVzdG9yZV9kYiAiJFBPU1RHUkVTX0RCIiAiJFBPU1RHUkVTX0FSQ0hJVkVfVVJJIgplbHNlCiAgZWNobyAiRGVjbGluaW5nIHRvIHJlc3RvcmUgdGhlIGRiIGJlY2F1c2Ugbm8gYXJjaGl2ZSB1cmkgd2FzIHByb3ZpZGVkIgpmaQoKd2FpdCAkYmFja2dyb3VuZFByb2Nlc3MK
+    IyEvdXNyL2Jpbi9lbnYgYmFzaAoKc2V0IC1ldW8gcGlwZWZhaWwKCnNvdXJjZSAvdXNyL2xvY2FsL2Jpbi9kb2NrZXItZW50cnlwb2ludC5zaAoKaW5zdGFsbF9kZXBzKCkgewogIGFwdC1nZXQgdXBkYXRlIC15ID4gL2Rldi9udWxsCiAgYXB0LWdldCBpbnN0YWxsIGN1cmwgLXkgPiAvZGV2L251bGwKICBhcHQtZ2V0IGluc3RhbGwgdW56aXAgLXkgPiAvZGV2L251bGwKICBjdXJsICJodHRwczovL2F3c2NsaS5hbWF6b25hd3MuY29tL2F3c2NsaS1leGUtbGludXgteDg2XzY0LnppcCIgLW8gImF3c2NsaXYyLnppcCIgPiAvZGV2L251bGwKICB1bnppcCBhd3NjbGl2Mi56aXAgPiAvZGV2L251bGwKICAuL2F3cy9pbnN0YWxsID4gL2Rldi9udWxsCn0KCmRiX2hhc19iZWVuX3Jlc3RvcmVkKCkgewogIGlmIFsgISAtZiAiJFBHREFUQS9DUExOX1JFU1RPUkVEIiBdOyB0aGVuCiAgICByZXR1cm4gMQogIGZpCgogIGlmICEgZ3JlcCAtcSAiXC0+ICQxJCIgIiRQR0RBVEEvQ1BMTl9SRVNUT1JFRCI7IHRoZW4KICAgIHJldHVybiAxCiAgZWxzZQogICAgcmV0dXJuIDAKICBmaQp9CgpyZXN0b3JlX2RiKCkgewogIHdoaWxlIFsgISAtUyAvdmFyL3J1bi9wb3N0Z3Jlc3FsLy5zLlBHU1FMLjU0MzIgXQogIGRvCiAgICBlY2hvICJXYWl0aW5nIDVzIGZvciBkYiBzb2NrZXQgdG8gYmUgYXZhaWxhYmxlIgogICAgc2xlZXAgNXMKICBkb25lCgogIGlmICEgZGJfaGFzX2JlZW5fcmVzdG9yZWQgIiQxIjsgdGhlbgogICAgZWNobyAiSXQgYXBwZWFycyBkYiAnJDEnIGhhcyBub3QgeWV0IGJlZW4gcmVzdG9yZWQgZnJvbSBTMy4gQXR0ZW1wdGluZyB0byByZXN0b3JlICQxIGZyb20gJDIiCiAgICBpbnN0YWxsX2RlcHMKICAgIGRvY2tlcl9zZXR1cF9kYiAjIEVuc3VyZXMgJFBPU1RHUkVTX0RCIGV4aXN0cyAoZGVmaW5lZCBpbiB0aGUgZW50cnlwb2ludCBzY3JpcHQgZnJvbSB0aGUgcG9zdGdyZXMgaW1hZ2UpCiAgICBhd3MgczMgY3AgIiQyIiAtIHwgcGdfcmVzdG9yZSAtLWNsZWFuIC0tbm8tYWNsIC0tbm8tb3duZXIgLWQgIiQxIiAtVSAiJFBPU1RHUkVTX1VTRVIiCiAgICBlY2hvICIkKGRhdGUpOiAkMiAtPiAkMSIgPj4gIiRQR0RBVEEvQ1BMTl9SRVNUT1JFRCIKICBlbHNlCiAgICBlY2hvICJEYiAnJDEnIGFscmVhZHkgZXhpc3RzLiBSZWFkeSEiCiAgZmkKfQoKX21haW4gIiRAIiAmCmJhY2tncm91bmRQcm9jZXNzPSQhCnJlYWR5RmlsZT0iJFBHREFUQS9DUExOX1JFQURZIgpybSAtZiAiJHJlYWR5RmlsZSIKCmlmIFsgLW4gIiR7UE9TVEdSRVNfQVJDSElWRV9VUkk6LX0iIF07IHRoZW4KICByZXN0b3JlX2RiICIkUE9TVEdSRVNfREIiICIkUE9TVEdSRVNfQVJDSElWRV9VUkkiCmVsc2UKICBlY2hvICJEZWNsaW5pbmcgdG8gcmVzdG9yZSB0aGUgZGIgYmVjYXVzZSBubyBhcmNoaXZlIHVyaSB3YXMgcHJvdmlkZWQiCmZpCgp0b3VjaCAiJHJlYWR5RmlsZSIKd2FpdCAkYmFja2dyb3VuZFByb2Nlc3MK
 
 #Here is the ASCII-encoded version of the script in the secret above
 #!/usr/bin/env bash
@@ -69,13 +69,12 @@ data:
 #    sleep 5s
 #  done
 #
-#
 #  if ! db_has_been_restored "$1"; then
 #    echo "It appears db '$1' has not yet been restored from S3. Attempting to restore $1 from $2"
 #    install_deps
-#    docker_setup_db #Ensures $POSTGRES_DB exists (defined in the entrypoint script from the postgres docker image)
+#    docker_setup_db # Ensures $POSTGRES_DB exists (defined in the entrypoint script from the postgres image)
 #    aws s3 cp "$2" - | pg_restore --clean --no-acl --no-owner -d "$1" -U "$POSTGRES_USER"
-#    echo "$(date): $2 -> $1" | cat >> "$PGDATA/CPLN_RESTORED"
+#    echo "$(date): $2 -> $1" >> "$PGDATA/CPLN_RESTORED"
 #  else
 #    echo "Db '$1' already exists. Ready!"
 #  fi
@@ -83,6 +82,8 @@ data:
 #
 #_main "$@" &
 #backgroundProcess=$!
+#readyFile="$PGDATA/CPLN_READY"
+#rm -f "$readyFile"
 #
 #if [ -n "${POSTGRES_ARCHIVE_URI:-}" ]; then
 #  restore_db "$POSTGRES_DB" "$POSTGRES_ARCHIVE_URI"
@@ -90,6 +91,7 @@ data:
 #  echo "Declining to restore the db because no archive uri was provided"
 #fi
 #
+#touch "$readyFile"
 #wait $backgroundProcess
 
 ---
@@ -164,8 +166,11 @@ spec:
         periodSeconds: 10
         failureThreshold: 3
       readinessProbe:
-        tcpSocket:
-          port: 5432
+        exec:
+          command:
+            - /bin/bash
+            - -c
+            - 'pg_isready -U "$POSTGRES_USER" -d "${POSTGRES_DB:-$POSTGRES_USER}" && test -f "$PGDATA/CPLN_READY"'
         initialDelaySeconds: 10
         periodSeconds: 5
         failureThreshold: 3

@@ -1,0 +1,26 @@
+kind: workload
+name: sidekiq
+spec:
+  type: standard
+  containers:
+    - name: sidekiq
+      cpu: 300m
+      memory: 512Mi
+      inheritEnv: true
+      image: "{{APP_IMAGE_LINK}}"
+      command: bundle
+      args:
+        - exec
+        - sidekiq
+  defaultOptions:
+    autoscaling:
+      minScale: 1
+      maxScale: 1
+    capacityAI: true
+  firewallConfig:
+    external:
+      inboundAllowCIDR: []
+      outboundAllowCIDR:
+        - 0.0.0.0/0
+  # cpflow apply-template replaces {{APP_IDENTITY_LINK}} with the app workload identity link.
+  identityLink: "{{APP_IDENTITY_LINK}}"

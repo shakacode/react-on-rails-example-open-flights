@@ -17,3 +17,59 @@ if ! cmp -s "${snapshot}" "${generated_pack}"; then
 fi
 
 echo "React on Rails generated server pack is current."
+
+ruby <<'RUBY'
+require "base64"
+require "yaml"
+
+config = YAML.load_file(".controlplane/controlplane.yml", aliases: true)
+common = config.fetch("aliases").fetch("common")
+
+expected_templates = %w[app postgres redis rails sidekiq]
+expected_app_workloads = %w[rails sidekiq]
+expected_additional_workloads = %w[postgres redis]
+
+unless common.fetch("setup_app_templates") == expected_templates
+  abort "Control Plane setup templates must be #{expected_templates.join(', ')}"
+end
+unless common.fetch("app_workloads") == expected_app_workloads
+  abort "Control Plane app workloads must be #{expected_app_workloads.join(', ')}"
+end
+unless common.fetch("additional_workloads") == expected_additional_workloads
+  abort "Control Plane additional workloads must be #{expected_additional_workloads.join(', ')}"
+end
+
+app = YAML.load_file(".controlplane/templates/app.yml")
+app_env = app.fetch("spec").fetch("env").to_h { |entry| [entry.fetch("name"), entry.fetch("value")] }
+expected_redis_url = "redis://redis.{{APP_NAME}}.cpln.local:6379"
+abort "app template must configure REDIS_URL" unless app_env["REDIS_URL"] == expected_redis_url
+
+sidekiq = YAML.load_file(".controlplane/templates/sidekiq.yml")
+sidekiq_container = sidekiq.fetch("spec").fetch("containers").fetch(0)
+abort "sidekiq must deploy the app image" unless sidekiq_container["image"] == "{{APP_IMAGE_LINK}}"
+abort "sidekiq workload command is invalid" unless sidekiq_container["command"] == "bundle" && sidekiq_container["args"] == %w[exec sidekiq]
+
+postgres_text = File.read(".controlplane/templates/postgres.yml")
+postgres_documents = YAML.load_stream(postgres_text)
+entrypoint_secret = postgres_documents.find do |document|
+  document.is_a?(Hash) && document["kind"] == "secret" && document["name"] == "{{APP_NAME}}-pg-script"
+end
+decoded_entrypoint = Base64.decode64(entrypoint_secret.fetch("data").fetch("payload"))
+readable_lines = postgres_text.lines
+  .drop_while { |line| !line.start_with?("#Here is the ASCII-encoded") }
+  .drop(1)
+  .take_while { |line| line.strip != "---" }
+readable_entrypoint = readable_lines.shift.to_s + readable_lines.map { |line| line.sub(/\A#/, "") }.join
+unless decoded_entrypoint.rstrip == readable_entrypoint.rstrip
+  abort "encoded PostgreSQL entrypoint differs from its readable source"
+end
+
+postgres = postgres_documents.find { |document| document.is_a?(Hash) && document["kind"] == "workload" }
+readiness = postgres.fetch("spec").fetch("containers").fetch(0).fetch("readinessProbe")
+readiness_command = readiness.fetch("exec").fetch("command")
+unless readiness_command.last.include?("pg_isready") && readiness_command.last.include?("CPLN_READY")
+  abort "postgres readiness must require a live database and completed restore marker"
+end
+
+puts "Control Plane runtime topology is complete."
+RUBY
