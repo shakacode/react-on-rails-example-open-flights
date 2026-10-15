@@ -79,6 +79,9 @@ jobs:
             - open-flights-yarn-{{ checksum "yarn.lock" }}
             - open-flights-yarn-
       - run:
+          name: Install JavaScript dependencies for rendering specs
+          command: yarn install --frozen-lockfile --cache-folder ~/.cache/yarn
+      - run:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
