@@ -58,4 +58,16 @@ RSpec.describe 'Password reset requests', type: :request do
       expect { Api::V1::AuthController.new.send(:password_reset_root_url) }.to raise_error(ArgumentError)
     end
   end
+  it "preserves special characters in password reset link values" do
+    original_sender = ENV["DEFAULT_FROM_EMAIL"]
+    ENV["DEFAULT_FROM_EMAIL"] = "sender@example.invalid"
+    email = "a+b@example.invalid"
+    token = "token+with&special#characters"
+    mail = ResetPasswordMailer.call(email, token, ENV.fetch("ROOT_URL"))
+    href = Nokogiri::HTML(mail.body.decoded).at_css("a")["href"]
+    expect(URI.decode_www_form(URI.parse(href).query).to_h).to eq("email" => email, "token" => token)
+  ensure
+    original_sender ? ENV["DEFAULT_FROM_EMAIL"] = original_sender : ENV.delete("DEFAULT_FROM_EMAIL")
+  end
+
 end

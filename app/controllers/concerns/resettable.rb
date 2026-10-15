@@ -15,7 +15,7 @@ module Resettable
       ResetPasswordWorker.perform_async(user.email, user.reload.reset_password_token, root_url)
     end
 
-    render json: { success: true }, status: 204
+    head :no_content
   end
   
   # TODO: Clean up this method
@@ -25,7 +25,7 @@ module Resettable
     return invalid_reset unless user&.password_token_valid?
 
     if user.reset_password!(params[:password])
-      render json: { success: true }, status: 204
+      head :no_content
     else
       render json: { error: user.errors.full_messages }, status: 422
     end
