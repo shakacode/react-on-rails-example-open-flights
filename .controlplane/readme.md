@@ -98,7 +98,7 @@ Environment variables. Do not create a repository or organization secret named
 The Rails readiness probe requests `/hello_world` so a failed SSR render keeps
 its replica unready. After deployment, verify the healthy latest replica and
 its image commit, then smoke `/`, `/hello_world`, airline navigation, and greeting
-input. Production enforces HTTPS with secure cookies. Only the private HTTP readiness request to `/hello_world` bypasses the redirect. Verify public HTTP redirects to HTTPS and the HTTPS SSR response works without a redirect loop. Readiness alone does not prove browser hydration or the home page.
+input. Production enforces HTTPS with secure cookies. The readiness command calls `/hello_world` on loopback with the HTTPS proxy header; no public path is exempt from HTTPS redirection. Verify public HTTP redirects to HTTPS and the HTTPS SSR response works without a redirect loop. Readiness alone does not prove browser hydration or the home page.
 
 This PR configures the deployment path for review; no persistent app, credential,
 GitHub variable, production environment, or branch protection is created by it.

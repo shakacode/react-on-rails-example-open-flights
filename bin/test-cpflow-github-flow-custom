@@ -30,6 +30,11 @@ DISABLE_SPRING=1 \
     abort "production Action Cable adapter is not Redis" unless ActionCable.server.config.pubsub_adapter == ActionCable::SubscriptionAdapter::Redis
     abort "SMTP must require STARTTLS before authentication" unless ActionMailer::Base.smtp_settings[:enable_starttls] == true && !ActionMailer::Base.smtp_settings[:enable_starttls_auto]
     abort "production must enforce HTTPS" unless Rails.application.config.force_ssl
+    ssl = ActionDispatch::SSL.new(->(_env) { [200, {}, ["ok"]] }, **(Rails.application.config.ssl_options || {}))
+    %w[/ /hello_world].each do |path|
+      status, headers, = ssl.call(Rack::MockRequest.env_for("http://configured.example#{path}"))
+      abort "public HTTP must redirect to HTTPS, including SSR" unless status == 301 && headers["location"] == "https://configured.example#{path}"
+    end
     abort "mail delivery must default to disabled until credentials are configured" if ActionMailer::Base.perform_deliveries
     controller = Api::V1::AuthController.new
     abort "reset links must use the platform endpoint" unless controller.send(:password_reset_root_url) == "https://rails-review.ready.controlplane.us"
@@ -130,7 +135,10 @@ if postgres_documents.any? { |document| document.is_a?(Hash) && document["kind"]
 end
 rails = YAML.load_file(".controlplane/templates/rails.yml")
 probe = rails.fetch("spec").fetch("containers").fetch(0).fetch("readinessProbe")
-abort "Rails readiness must exercise SSR" unless probe.fetch("httpGet") == {"path" => "/hello_world", "port" => 3000}
+probe_command = probe.fetch("exec").fetch("command")
+unless probe_command.first == "ruby" && probe_command.last.include?("Net::HTTP::Get.new('/hello_world')") && probe_command.last.include?("127.0.0.1") && probe_command.last.include?("X-Forwarded-Proto") && probe_command.last.include?("Net::HTTPSuccess")
+  abort "Rails readiness must execute SSR locally without a public HTTPS exception"
+end
 entrypoint_secret = postgres_documents.find do |document|
   document.is_a?(Hash) && document["kind"] == "secret" && document["name"] == "{{APP_NAME}}-pg-script"
 end

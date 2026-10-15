@@ -18,9 +18,17 @@ spec:
           # See https://www.shakacode.com/control-plane-flow/docs/thruster/ for details.
           protocol: http
       readinessProbe:
-        httpGet:
-          path: /hello_world
-          port: 3000
+        exec:
+          command:
+            - ruby
+            - -rnet/http
+            - -e
+            - >-
+              request = Net::HTTP::Get.new('/hello_world');
+              request['X-Forwarded-Proto'] = 'https';
+              response = Net::HTTP.start('127.0.0.1', 3000, open_timeout: 1, read_timeout: 4) { |http| http.request(request) };
+              exit(response.is_a?(Net::HTTPSuccess) ? 0 : 1)
+        timeoutSeconds: 5
         initialDelaySeconds: 10
         periodSeconds: 10
         failureThreshold: 6
