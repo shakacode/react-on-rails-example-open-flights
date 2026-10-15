@@ -32,6 +32,7 @@ jobs:
           --health-retries 10
     env:
       RAILS_ENV: test
+      DISABLE_SPRING: '1'
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/open_flights_test
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
