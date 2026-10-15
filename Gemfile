@@ -23,6 +23,7 @@ gem 'graphql'
 gem 'graphql-batch'
 gem 'graphiql-rails', group: :development
 gem 'pry'
+gem 'redis'
 
 group :development, :test do
   gem 'factory_bot_rails'
