@@ -45,7 +45,7 @@ reviewed and configured. The caller defaults to disabled: set repository variabl
 `OPEN_FLIGHTS_REVIEW_APPS_ENABLED=true` only after that path is in place. This PR
 does not automate credential provisioning.
 
-Password reset mail uses SendGrid SMTP only when `MAIL_DELIVERIES_ENABLED=true`. Mail delivery defaults to disabled, so staging can boot without SMTP credentials. Configure a restricted SMTP key and an approved `DEFAULT_FROM_EMAIL` before opting in. Reset requests return the same response for known and unknown addresses; production reset links must use an HTTPS origin. Pull-request code can read every review
+Password reset mail uses SendGrid SMTP only when `MAIL_DELIVERIES_ENABLED=true`. Mail delivery defaults to disabled, so staging can boot without SMTP credentials. The app template still references `SENDGRID_USERNAME`, `SENDGRID_PASSWORD`, and `DEFAULT_FROM_EMAIL`; create those dictionary fields with empty values while mail is disabled. A missing referenced field prevents the platform from starting the container. Configure a restricted SMTP key and an approved `DEFAULT_FROM_EMAIL` before opting in. Reset requests return the same response for known and unknown addresses; production reset links must use an HTTPS origin. Pull-request code can read every review
 app secret, so use only a restricted, disposable review API key and an approved
 review sender. Each review app uses its platform-provided
 `CPLN_GLOBAL_ENDPOINT` as the reset origin, so request and forwarded host
