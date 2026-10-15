@@ -7,11 +7,12 @@ module Resettable
   
   # TODO: Clean up this method
   def forgot_password
+    root_url = password_reset_root_url
     user = User.find_by(email: params[:email])
 
     if user
       user.generate_password_token!
-      send_reset_password_email(user.email, user.reload.reset_password_token)
+      ResetPasswordWorker.perform_async(user.email, user.reload.reset_password_token, root_url)
     end
 
     render json: { success: true }, status: 204
@@ -31,15 +32,6 @@ module Resettable
   end
 
   private
-
-  # Send the password reset email.
-  # @param email [String]
-  # @param token [String]
-  #
-  # @return [Nil]
-  def send_reset_password_email(email, token)
-    ResetPasswordWorker.perform_async(email, token, password_reset_root_url)
-  end
 
   def password_reset_root_url
     value = ENV['CPLN_GLOBAL_ENDPOINT'].presence || ENV.fetch('ROOT_URL')

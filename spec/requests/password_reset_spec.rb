@@ -29,6 +29,15 @@ RSpec.describe 'Password reset requests', type: :request do
     expect(Api::V1::AuthController.new.send(:password_reset_root_url)).to eq('https://rails-preview.cpln.app')
   end
 
+  it 'fails consistently before changing a token when the reset origin is invalid' do
+    user = create(:user)
+    ENV['ROOT_URL'] = 'https://reset.example.invalid/path'
+    [user.email, 'unknown@example.invalid'].each do |email|
+      expect { post '/api/v1/auth/password/forgot', params: { email: email } }.to raise_error(ArgumentError)
+    end
+    expect(user.reload.reset_password_token).to be_nil
+  end
+
   it 'rejects an insecure password reset origin in production' do
     allow(Rails.env).to receive(:production?).and_return(true)
     ENV['CPLN_GLOBAL_ENDPOINT'] = 'http://rails-preview.cpln.app'

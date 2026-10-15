@@ -94,7 +94,7 @@ end
 
 resettable = File.read("app/controllers/concerns/resettable.rb")
 unless resettable.include?("ENV['CPLN_GLOBAL_ENDPOINT'].presence || ENV.fetch('ROOT_URL')") &&
-       resettable.include?("ResetPasswordWorker.perform_async(email, token, password_reset_root_url)")
+       resettable.include?("ResetPasswordWorker.perform_async(user.email, user.reload.reset_password_token, root_url)")
   abort "review apps must queue reset mail with their platform-provided endpoint"
 end
 

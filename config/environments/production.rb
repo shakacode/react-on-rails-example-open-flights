@@ -58,6 +58,10 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = ENV.fetch('MAIL_DELIVERIES_ENABLED', 'false') == 'true'
+  if config.action_mailer.perform_deliveries
+    missing = %w[SENDGRID_USERNAME SENDGRID_PASSWORD DEFAULT_FROM_EMAIL ROOT_URL].reject { |key| ENV[key].present? }
+    raise ArgumentError, "Mail delivery requires: #{missing.join(', ')}" if missing.any?
+  end
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
     address: 'smtp.sendgrid.net',
