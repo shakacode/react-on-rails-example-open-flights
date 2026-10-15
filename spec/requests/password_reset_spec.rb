@@ -38,6 +38,14 @@ RSpec.describe 'Password reset requests', type: :request do
     expect(user.reload.reset_password_token).to be_nil
   end
 
+  it 'skips queued mail when delivery is disabled and the sender is unconfigured' do
+    original_sender = ENV.delete('DEFAULT_FROM_EMAIL')
+    allow(ActionMailer::Base).to receive(:perform_deliveries).and_return(false)
+    expect { ResetPasswordWorker.new.perform('test@example.invalid', 'token', ENV.fetch('ROOT_URL')) }.not_to raise_error
+  ensure
+    ENV['DEFAULT_FROM_EMAIL'] = original_sender if original_sender
+  end
+
   it 'rejects an insecure password reset origin in production' do
     allow(Rails.env).to receive(:production?).and_return(true)
     ENV['CPLN_GLOBAL_ENDPOINT'] = 'http://rails-preview.cpln.app'
