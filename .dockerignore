@@ -17,3 +17,5 @@ public/assets
 public/packs
 public/packs-test
 coverage
+
+config/application.yml

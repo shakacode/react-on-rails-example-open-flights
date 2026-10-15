@@ -151,5 +151,6 @@ unless readiness_command.last.include?("pg_isready") && readiness_command.last.i
   abort "postgres readiness must require a live database and completed restore marker"
 end
 
+abort "local credential file must be excluded from Docker context" unless File.readlines(".dockerignore", chomp: true).include?("config/application.yml")
 puts "Control Plane runtime topology is complete."
 RUBY
