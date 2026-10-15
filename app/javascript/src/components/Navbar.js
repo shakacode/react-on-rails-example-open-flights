@@ -45,6 +45,7 @@ const Right = styled.div`
 
 const Menu = styled.ul`
   display: flex;
+  gap: 16px;
   flex-direction: row;
   justify-content: space-between;
   padding:0;
