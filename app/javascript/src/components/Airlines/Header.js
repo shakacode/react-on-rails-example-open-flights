@@ -7,6 +7,10 @@ const Wrapper = styled.div`
   h1 {
     font-size:42px;
   }
+
+  @media (max-width: 600px) {
+    padding: 40px 20px 10px;
+  }
 `
 
 const Subheader = styled.p`
