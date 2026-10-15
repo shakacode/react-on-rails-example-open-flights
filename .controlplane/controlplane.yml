@@ -8,7 +8,7 @@ allow_app_override_by_env: true
 
 aliases:
   common: &common
-    cpln_org: my-org-staging
+    cpln_org: shakacode-open-source-examples-staging
     default_location: aws-us-east-2
     setup_app_templates:
       - app

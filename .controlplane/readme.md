@@ -20,35 +20,30 @@ persistence, and Action Cable uses the same internal Redis endpoint.
 PostgreSQL does not report ready until any configured archive restore succeeds,
 so release commands cannot race a partially restored database.
 
-The generated PostgreSQL template contains review/demo-only placeholder
-credentials. Replace both database secret values before bootstrapping any app,
-then add a matching full `DATABASE_URL` value to that app's generated secret
-dictionary. The Rails template reads `{{APP_SECRETS}}.DATABASE_URL`; never
-commit the real connection string.
+Database credentials are provisioned outside the templates. `setup-app` and
+`apply-template` reference the existing `<app-name>-pg` secret and never write
+its username or password. This avoids resetting live database credentials when
+applying a template update. PostgreSQL remains internal to each app GVC.
 
 ## One-Time Bootstrap
 
-Create the shared review-app secret before enabling review deployments. Review
-apps execute pull-request code, so use a disposable value that grants no access
-to staging, production, or third-party services:
+Before `setup-app`, provision a dictionary secret named `<app-name>-pg` with
+`username` and `password` fields through the approved secret-management path.
+Use distinct credentials for staging, production, and each disposable review
+app. Do not commit credentials or put them in workflow variables. Existing
+PostgreSQL volumes retain their initialized password; rotating the secret alone
+does not rotate the database role.
 
-```sh
-cpln secret create-dictionary \
-  --name react-on-rails-open-flights-example-review-secrets \
-  --org "$CPLN_ORG_STAGING" \
-  --entry "SECRET_KEY_BASE=$(bin/rails secret)" \
-  --entry "DATABASE_URL=postgresql://the_user:the_password@postgres:5432/the_user" \
-  --entry "ROOT_URL=https://replace-with-the-review-app-url" \
-  --entry "SENDGRID_USERNAME=apikey" \
-  --entry "SENDGRID_PASSWORD=replace-with-a-review-only-api-key" \
-  --entry "DEFAULT_FROM_EMAIL=review-app@example.com"
-```
-
-The disposable review URL targets the `postgres` workload inside each review
-app GVC and matches the checked-in review/demo credentials. Replace
-`the_user` and `the_password` in both this command and
-`.controlplane/templates/postgres.yml` before bootstrapping review apps; URL
-encode either value if it contains reserved URL characters.
+Provision the app secret dictionary with `SECRET_KEY_BASE`, `DATABASE_URL`,
+`ROOT_URL`, and any mail settings used below. For a review app, cpflow uses the
+shared `react-on-rails-open-flights-example-review-secrets` dictionary, which must
+contain only disposable, review-scoped values. The `DATABASE_URL` must match the
+provisioned database role and address `postgres.<app-name>.cpln.local:5432`.
+A shared review secret cannot contain different URLs for concurrent app GVCs:
+keep review deployment disabled until a per-review secret provisioning path is
+reviewed and configured. The caller defaults to disabled: set repository variable
+`OPEN_FLIGHTS_REVIEW_APPS_ENABLED=true` only after that path is in place. This PR
+does not automate credential provisioning.
 
 Password reset mail uses SendGrid SMTP. Pull-request code can read every review
 app secret, so use only a restricted, disposable review API key and an approved
@@ -59,7 +54,8 @@ that runtime value is unavailable and for jobs queued before this flow was
 installed. Omit password-reset testing rather than exposing staging or
 production mail credentials to a review app.
 
-Bootstrap the persistent staging and production apps before their first deploy:
+Bootstrap staging before its first deploy. Production remains unconfigured
+(`my-org-production`) and requires a separate reviewed setup before promotion:
 
 ```sh
 cpflow setup-app \
@@ -85,7 +81,7 @@ the app identity can `reveal` the app secret policy.
 ## GitHub Configuration
 
 Store `CPLN_TOKEN_STAGING` as a repository secret. Set the repository variables
-`CPLN_ORG_STAGING` to the staging Control Plane organization and
+`CPLN_ORG_STAGING` to `shakacode-open-source-examples-staging` and
 `STAGING_APP_NAME` to `react-on-rails-open-flights-example-staging`; both review
 apps and automatic staging deploys use that staging organization. The review
 app prefix is inferred from `.controlplane/controlplane.yml` unless
@@ -96,3 +92,16 @@ self-review disabled. Store `CPLN_TOKEN_PRODUCTION` only as an Environment
 secret, and set `CPLN_ORG_PRODUCTION` and `PRODUCTION_APP_NAME` there as
 Environment variables. Do not create a repository or organization secret named
 `CPLN_TOKEN_PRODUCTION`.
+
+## Rollout verification
+
+The Rails readiness probe requests `/hello_world` so a failed SSR render keeps
+its replica unready. After deployment, verify the healthy latest replica and
+its image commit, then smoke `/`, `/hello_world`, airline navigation, and greeting
+input. Readiness alone does not prove browser hydration or the home page.
+
+This PR configures the deployment path for review; no persistent app, credential,
+GitHub variable, production environment, or branch protection is created by it.
+The staging bootstrap and GitHub settings above remain required before merge.
+The stable React on Rails 17.2 upgrade and home/client rendering repairs are
+tracked separately in PR #32.

@@ -16,14 +16,8 @@ spec:
     createFinalSnapshot: true
     retentionDuration: 7d
 
----
-kind: secret
-name: "{{APP_NAME}}-pg"
-description: ''
-type: dictionary
-data:
-  password: the_password #Replace this with a real password
-  username: the_user     #Replace this with a real username
+# Provision {{APP_NAME}}-pg separately before setup-app; see ../readme.md.
+# Keeping credentials out of this template prevents apply-template resetting them.
 
 ---
 kind: secret

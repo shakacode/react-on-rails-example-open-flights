@@ -42,6 +42,11 @@ require "yaml"
 
 config = YAML.load_file(".controlplane/controlplane.yml", aliases: true)
 common = config.fetch("aliases").fetch("common")
+abort "staging must target the verified example organization" unless common["cpln_org"] == "shakacode-open-source-examples-staging"
+review = YAML.load_file(".github/workflows/cpflow-deploy-review-app.yml")
+unless review.fetch("jobs").fetch("deploy").fetch("if").start_with?("vars.OPEN_FLIGHTS_REVIEW_APPS_ENABLED == 'true' && (")
+  abort "review deployments must stay disabled until credential provisioning is ready"
+end
 
 expected_templates = %w[app postgres redis rails sidekiq]
 expected_app_workloads = %w[rails sidekiq]
@@ -113,6 +118,12 @@ abort "production Action Cable must use REDIS_URL" unless cable.include?('ENV.fe
 
 postgres_text = File.read(".controlplane/templates/postgres.yml")
 postgres_documents = YAML.load_stream(postgres_text)
+if postgres_documents.any? { |document| document.is_a?(Hash) && document["kind"] == "secret" && document["name"] == "{{APP_NAME}}-pg" }
+  abort "PostgreSQL credentials must be provisioned separately, never reapplied by templates"
+end
+rails = YAML.load_file(".controlplane/templates/rails.yml")
+probe = rails.fetch("spec").fetch("containers").fetch(0).fetch("readinessProbe")
+abort "Rails readiness must exercise SSR" unless probe.fetch("httpGet") == {"path" => "/hello_world", "port" => 3000}
 entrypoint_secret = postgres_documents.find do |document|
   document.is_a?(Hash) && document["kind"] == "secret" && document["name"] == "{{APP_NAME}}-pg-script"
 end
