@@ -45,7 +45,7 @@ reviewed and configured. The caller defaults to disabled: set repository variabl
 `OPEN_FLIGHTS_REVIEW_APPS_ENABLED=true` only after that path is in place. This PR
 does not automate credential provisioning.
 
-Password reset mail uses SendGrid SMTP. Pull-request code can read every review
+Password reset mail uses SendGrid SMTP only when `MAIL_DELIVERIES_ENABLED=true`. Mail delivery defaults to disabled, so staging can boot without SMTP credentials. Configure a restricted SMTP key and an approved `DEFAULT_FROM_EMAIL` before opting in. Reset requests return the same response for known and unknown addresses; production reset links must use an HTTPS origin. Pull-request code can read every review
 app secret, so use only a restricted, disposable review API key and an approved
 review sender. Each review app uses its platform-provided
 `CPLN_GLOBAL_ENDPOINT` as the reset origin, so request and forwarded host
@@ -54,7 +54,7 @@ that runtime value is unavailable and for jobs queued before this flow was
 installed. Omit password-reset testing rather than exposing staging or
 production mail credentials to a review app.
 
-Bootstrap staging before its first deploy. Production remains unconfigured
+Bootstrap staging before its first deploy. Production promotion defaults to disabled and requires repository variable `OPEN_FLIGHTS_PRODUCTION_ENABLED=true`, in addition to the protected environment below. Production remains unconfigured
 (`my-org-production`) and requires a separate reviewed setup before promotion:
 
 ```sh
@@ -69,7 +69,7 @@ cpflow setup-app \
   --skip-post-creation-hook
 ```
 
-Add distinct `SECRET_KEY_BASE`, `DATABASE_URL`, `ROOT_URL`,
+Add distinct `SECRET_KEY_BASE`, `DATABASE_URL`, `ROOT_URL`, and `MAIL_DELIVERIES_ENABLED=false` values. To enable mail, also configure
 `SENDGRID_USERNAME`, `SENDGRID_PASSWORD`, and `DEFAULT_FROM_EMAIL` values to the
 generated staging and production app secret dictionaries. Set each `ROOT_URL`
 to that app's public HTTPS endpoint, and use environment-specific SendGrid
@@ -98,7 +98,7 @@ Environment variables. Do not create a repository or organization secret named
 The Rails readiness probe requests `/hello_world` so a failed SSR render keeps
 its replica unready. After deployment, verify the healthy latest replica and
 its image commit, then smoke `/`, `/hello_world`, airline navigation, and greeting
-input. Readiness alone does not prove browser hydration or the home page.
+input. Production enforces HTTPS with secure cookies. Only the private HTTP readiness request to `/hello_world` bypasses the redirect. Verify public HTTP redirects to HTTPS and the HTTPS SSR response works without a redirect loop. Readiness alone does not prove browser hydration or the home page.
 
 This PR configures the deployment path for review; no persistent app, credential,
 GitHub variable, production environment, or branch protection is created by it.

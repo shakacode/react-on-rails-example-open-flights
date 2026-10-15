@@ -9,10 +9,10 @@ module Resettable
   def forgot_password
     user = User.find_by(email: params[:email])
 
-    return render json: { error: 'Something went wrong.' }, status: 422 unless user
-
-    user.generate_password_token!
-    send_reset_password_email(user.email, user.reload.reset_password_token)
+    if user
+      user.generate_password_token!
+      send_reset_password_email(user.email, user.reload.reset_password_token)
+    end
 
     render json: { success: true }, status: 204
   end
@@ -42,7 +42,15 @@ module Resettable
   end
 
   def password_reset_root_url
-    (ENV['CPLN_GLOBAL_ENDPOINT'].presence || ENV.fetch('ROOT_URL')).chomp('/')
+    value = ENV['CPLN_GLOBAL_ENDPOINT'].presence || ENV.fetch('ROOT_URL')
+    value = "https://#{value}" unless value.include?('://')
+    uri = URI.parse(value)
+    allowed_scheme = Rails.env.production? ? uri.scheme == 'https' : %w[http https].include?(uri.scheme)
+    unless allowed_scheme && uri.host.present? && uri.userinfo.nil? &&
+           uri.query.nil? && uri.fragment.nil? && ['', '/'].include?(uri.path)
+      raise ArgumentError, 'Password reset origin must be a valid HTTPS origin'
+    end
+    uri.to_s.chomp('/')
   end
 
   def check_email

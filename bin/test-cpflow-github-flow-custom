@@ -29,6 +29,8 @@ DISABLE_SPRING=1 \
   bundle exec rails runner '
     abort "production Action Cable adapter is not Redis" unless ActionCable.server.config.pubsub_adapter == ActionCable::SubscriptionAdapter::Redis
     abort "SMTP must require STARTTLS before authentication" unless ActionMailer::Base.smtp_settings[:enable_starttls] == true && !ActionMailer::Base.smtp_settings[:enable_starttls_auto]
+    abort "production must enforce HTTPS" unless Rails.application.config.force_ssl
+    abort "mail delivery must default to disabled until credentials are configured" if ActionMailer::Base.perform_deliveries
     controller = Api::V1::AuthController.new
     abort "reset links must use the platform endpoint" unless controller.send(:password_reset_root_url) == "https://rails-review.ready.controlplane.us"
     ENV.delete("CPLN_GLOBAL_ENDPOINT")
@@ -45,6 +47,10 @@ config = YAML.load_file(".controlplane/controlplane.yml", aliases: true)
 common = config.fetch("aliases").fetch("common")
 abort "staging must target the verified example organization" unless common["cpln_org"] == "shakacode-open-source-examples-staging"
 review = YAML.load_file(".github/workflows/cpflow-deploy-review-app.yml")
+promotion = YAML.load_file(".github/workflows/cpflow-promote-staging-to-production.yml")
+unless promotion.fetch("jobs").fetch("promote-to-production").fetch("if") == "vars.OPEN_FLIGHTS_PRODUCTION_ENABLED == 'true'"
+  abort "production promotion must require explicit repository opt-in"
+end
 unless review.fetch("jobs").fetch("deploy").fetch("if").start_with?("vars.OPEN_FLIGHTS_REVIEW_APPS_ENABLED == 'true' && (")
   abort "review deployments must stay disabled until credential provisioning is ready"
 end
@@ -67,7 +73,7 @@ app = YAML.load_file(".controlplane/templates/app.yml")
 app_env = app.fetch("spec").fetch("env").to_h { |entry| [entry.fetch("name"), entry.fetch("value")] }
 expected_redis_url = "redis://redis.{{APP_NAME}}.cpln.local:6379"
 abort "app template must configure REDIS_URL" unless app_env["REDIS_URL"] == expected_redis_url
-%w[ROOT_URL SENDGRID_USERNAME SENDGRID_PASSWORD DEFAULT_FROM_EMAIL].each do |name|
+%w[ROOT_URL SENDGRID_USERNAME SENDGRID_PASSWORD DEFAULT_FROM_EMAIL MAIL_DELIVERIES_ENABLED].each do |name|
   expected_value = "cpln://secret/{{APP_SECRETS}}.#{name}"
   abort "app template must load #{name} from the app secret" unless app_env[name] == expected_value
 end

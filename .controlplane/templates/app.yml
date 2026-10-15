@@ -21,6 +21,8 @@ spec:
       value: "cpln://secret/{{APP_SECRETS}}.SENDGRID_PASSWORD"
     - name: DEFAULT_FROM_EMAIL
       value: "cpln://secret/{{APP_SECRETS}}.DEFAULT_FROM_EMAIL"
+    - name: MAIL_DELIVERIES_ENABLED
+      value: "cpln://secret/{{APP_SECRETS}}.MAIL_DELIVERIES_ENABLED"
     - name: SECRET_KEY_BASE
       value: "cpln://secret/{{APP_SECRETS}}.SECRET_KEY_BASE"
   staticPlacement:

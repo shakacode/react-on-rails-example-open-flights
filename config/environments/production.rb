@@ -40,7 +40,9 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
+  # Control Plane probes SSR over the private HTTP listener.
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == '/hello_world' } } }
 
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.
@@ -57,6 +59,7 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "open-flights_#{Rails.env}"
   config.action_mailer.perform_caching = false
   config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.perform_deliveries = ENV.fetch('MAIL_DELIVERIES_ENABLED', 'false') == 'true'
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
     address: 'smtp.sendgrid.net',

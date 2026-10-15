@@ -47,6 +47,7 @@ concurrency:
 
 jobs:
   promote-to-production:
+    if: vars.OPEN_FLIGHTS_PRODUCTION_ENABLED == 'true'
     runs-on: ubuntu-latest
     # This normal caller-repo job declares the protected production Environment
     # directly, so GitHub exposes environment secrets in this job after the
