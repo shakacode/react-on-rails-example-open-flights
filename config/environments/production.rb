@@ -65,7 +65,7 @@ Rails.application.configure do
     user_name: ENV['SENDGRID_USERNAME'],
     password: ENV['SENDGRID_PASSWORD'],
     domain: URI.parse(ENV.fetch('ROOT_URL', 'http://localhost')).host,
-    enable_starttls_auto: true,
+    enable_starttls: true,
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to

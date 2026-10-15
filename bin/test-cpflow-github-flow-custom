@@ -28,6 +28,7 @@ DISABLE_SPRING=1 \
   CPLN_GLOBAL_ENDPOINT=https://rails-review.ready.controlplane.us/ \
   bundle exec rails runner '
     abort "production Action Cable adapter is not Redis" unless ActionCable.server.config.pubsub_adapter == ActionCable::SubscriptionAdapter::Redis
+    abort "SMTP must require STARTTLS before authentication" unless ActionMailer::Base.smtp_settings[:enable_starttls] == true && !ActionMailer::Base.smtp_settings[:enable_starttls_auto]
     controller = Api::V1::AuthController.new
     abort "reset links must use the platform endpoint" unless controller.send(:password_reset_root_url) == "https://rails-review.ready.controlplane.us"
     ENV.delete("CPLN_GLOBAL_ENDPOINT")
