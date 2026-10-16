@@ -1,0 +1,19 @@
+name: Show Review App Commands on PR Open
+
+on:
+  # pull_request_target is intentional: it has write permission to comment on PRs from
+  # forks, where `pull_request` would be read-only. This is safe because no PR code is
+  # checked out — the job only calls the upstream reusable workflow with a hardcoded
+  # message.
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  show-help:
+    # Advertise commands only when review deployment is enabled.
+    if: vars.OPEN_FLIGHTS_REVIEW_APPS_ENABLED == 'true'
+    uses: shakacode/control-plane-flow/.github/workflows/cpflow-review-app-help.yml@b1e5ff4a04adfccfd8b59996e8abdbb5defb3fd6

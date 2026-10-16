@@ -23,6 +23,7 @@ gem 'graphql'
 gem 'graphql-batch'
 gem 'graphiql-rails', group: :development
 gem 'pry'
+gem 'redis'
 
 group :development, :test do
   gem 'factory_bot_rails'
@@ -43,4 +44,4 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem "react_on_rails", "= 17.2.0"
 
-gem "shakapacker", "= 10.2.0"
+gem "shakapacker", "10.3.2"

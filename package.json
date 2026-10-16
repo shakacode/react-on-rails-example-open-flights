@@ -19,7 +19,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-on-rails": "17.2.0",
-    "react-router-dom": "^7.18.4",
+    "react-router-dom": "^5.3.4",
     "sass-loader": "^17.0.1",
     "shakapacker": "10.3.2",
     "style-loader": "4.0.0",
