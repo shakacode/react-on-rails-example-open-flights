@@ -9,6 +9,8 @@ gem 'rails', '~> 8.1'
 gem 'pg', '>= 0.18', '< 2.0'
 gem 'puma', '~> 8.0'
 gem 'minitest', '< 7'
+# Sprockets 4 passes parser options removed in JSON 3.
+gem 'json', '< 3'
 
 gem 'brakeman'
 gem 'bcrypt'
