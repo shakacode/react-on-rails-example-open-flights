@@ -50,3 +50,10 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: bundle exec rails db:prepare
       - run: .agents/bin/validate
+      - name: Install deployment validators
+        run: |
+          gem install cpflow -v 5.3.0 --no-document
+          GOBIN="${RUNNER_TEMP}/deployment-bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          echo "${RUNNER_TEMP}/deployment-bin" >> "$GITHUB_PATH"
+      - name: Validate deployment configuration
+        run: bin/test-cpflow-github-flow
