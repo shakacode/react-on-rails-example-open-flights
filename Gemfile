@@ -10,7 +10,7 @@ gem 'pg', '>= 0.18', '< 2.0'
 gem 'puma', '~> 8.0'
 gem 'minitest', '< 7'
 # Sprockets 4 passes parser options removed in JSON 3.
-gem 'json', '< 3'
+gem 'json', '< 4'
 
 gem 'brakeman'
 gem 'bcrypt'
@@ -44,6 +44,6 @@ group :development do
 end
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-gem "react_on_rails", "= 17.2.1.rc.0"
+gem "react_on_rails", "17.2.1.rc.1"
 
 gem "shakapacker", "10.3.2"
