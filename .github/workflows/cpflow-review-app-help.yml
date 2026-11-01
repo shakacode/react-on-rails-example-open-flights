@@ -16,4 +16,4 @@ jobs:
   show-help:
     # Advertise commands only when review deployment is enabled.
     if: vars.OPEN_FLIGHTS_REVIEW_APPS_ENABLED == 'true'
-    uses: shakacode/control-plane-flow/.github/workflows/cpflow-review-app-help.yml@b1e5ff4a04adfccfd8b59996e8abdbb5defb3fd6
+    uses: shakacode/control-plane-flow/.github/workflows/cpflow-review-app-help.yml@6aa575780f2d9175755881b79cbb3253adbc9c1f
